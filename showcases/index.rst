@@ -20,3 +20,11 @@ The following showcases are available:
    :glob:
 
    */index
+
+
+.. toctree::
+   :maxdepth: 1
+   :glob:
+   :caption: All showcases
+
+   */*/doc/index
