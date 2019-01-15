@@ -533,7 +533,7 @@ class INET_API TcpConnection : public cSimpleModule
     cMessage *cancelEvent(cMessage *msg) { return tcpMain->cancelEvent(msg); }
 
     /** Utility: send IP packet */
-    static void sendToIP(Packet *pkt, const Ptr<TcpHeader>& tcpseg, L3Address src, L3Address dest);
+    virtual void sendToIP(Packet *pkt, const Ptr<TcpHeader>& tcpseg, L3Address src, L3Address dest);
 
     /** Utility: sends packet to application */
     virtual void sendToApp(cMessage *msg);
