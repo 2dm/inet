@@ -284,7 +284,7 @@ void TcpConnection::sendToIP(Packet *pkt, const Ptr<TcpHeader>& tcpseg, L3Addres
     addresses->setSrcAddress(src);
     addresses->setDestAddress(dest);
     insertTransportProtocolHeader(pkt, Protocol::tcp, tcpseg);
-    check_and_cast<Tcp *>(getSimulation()->getContextModule())->send(pkt, "ipOut");
+    check_and_cast<Tcp *>(omnetpp::getSimulation()->getContextModule())->send(pkt, "ipOut");
 }
 
 void TcpConnection::signalConnectionTimeout()
