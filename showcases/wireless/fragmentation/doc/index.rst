@@ -207,7 +207,15 @@ Here are the results from the simulations:
    :width: 100%
    :align: center
 
+.. figure:: media/numberofpackets_.png
+   :width: 100%
+   :align: center
+
 .. figure:: media/throughput.png
+   :width: 100%
+   :align: center
+
+.. figure:: media/throughput_.png
    :width: 100%
    :align: center
 
@@ -234,6 +242,10 @@ with a constant fragmentation threshold of 250 bytes:
    :width: 90%
    :align: center
 
+.. figure:: media/onlypacketsize_.png
+   :width: 90%
+   :align: center
+
 Performance decreases with packet size in the ``DCFnofrag`` case, as larger packets
 have more chance for becoming corrupted. In the cases where fragmentation is enabled,
 the throughput follows a similar curve (increasing at the beginning, and fairly
@@ -246,6 +258,10 @@ of TXOP increases throughput, and the use of TXOP + block acks increases it furt
 Secondly, the fragmentation threshold was iterated, using a 1000-byte packet size:
 
 .. figure:: media/threshold.png
+   :width: 90%
+   :align: center
+
+.. figure:: media/threshold_.png
    :width: 90%
    :align: center
 
@@ -262,6 +278,10 @@ packets, the fragmentation threshold was set to around 1/16th of the packet size
    :width: 90%
    :align: center
 
+.. figure:: media/packetsize_.png
+   :width: 90%
+   :align: center
+
 ``DCFnofrag`` has an advantage when packets are small since fragmenting small packets
 to 16 fragments entails a lot of overhead. Otherwise, the three curves where fragmentation
 is enabled are similar, and the difference in magnitude is attributed to the use of TXOP
@@ -271,6 +291,14 @@ Then, the transmission power was iterated to examine performance at different no
 
 .. figure:: media/snir.png
    :width: 90%
+   :align: center
+
+.. figure:: media/snir_.png
+   :width: 100%
+   :align: center
+
+.. figure:: media/snir__.png
+   :width: 100%
    :align: center
 
 It is apparent that in this scenario, the domain in which fragmentation is useful is
