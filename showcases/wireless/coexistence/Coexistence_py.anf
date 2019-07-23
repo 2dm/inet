@@ -611,10 +611,11 @@ plt.ylim(bottom, top*1.1)
 #plt.savefig('wpanperformance.png', dpi=120, bbox_inches='tight', transparent=True)
 ]]></script>
         </chart>
-        <chart icon="icons/full/obj/barchart.png" id="817" name="Bar Chart (Matplotlib)" template="barchart_mpl" type="MATPLOTLIB">
+        <chart icon="icons/full/obj/barchart.png" id="817" name="Wifi performance" template="barchart_mpl" type="MATPLOTLIB">
             <script><![CDATA[from omnetpp.scave import results, chart
 import matplotlib.pyplot as plt
 import pandas as pd
+from matplotlib.pyplot import xticks
 
 params = chart.get_properties()
 
@@ -633,24 +634,38 @@ title, legend = chart.extract_label_columns(df)
 for i, c in legend:
     df[c] = pd.to_numeric(df[c], errors="ignore")
 
-df.sort_values(by=[l for i, l in legend], axis='index', inplace=True)
+print(df)
+plt.title("Wifi performance")
 
-plt.title(chart.make_chart_title(df, title, legend))
+df = pd.pivot_table(df, index='experiment', values='value')
 
-if len(legend) == 2:
-    df = pd.pivot_table(df, index=legend[0][1], columns=legend[1][1], values='value')
-else:
-    df = pd.pivot_table(df, index=[l for i, l in legend], values='value')
-
+df.sort_values(by="experiment", axis='index', inplace=True, ascending=False)
 print(df)
 
-if False:
-    df = df.transpose()
+df.columns=['Number of packets received']
+df.index=['Wifi only','Wifi+WPAN coexistence']
 
-df.plot(kind='bar', ax=plt.gca())
+df.plot(kind='bar', ax=plt.gca(), zorder=2, align='center', width=0.8, figsize=(8,6))
 
 plt.legend()
-plt.grid()]]></script>
+plt.grid(axis='y', linestyle='--')
+xticks(rotation=0)
+
+plt.xlabel('')
+
+ax = plt.gca()
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height() - 200),
+                horizontalalignment='center', verticalalignment='top', color='white', size=12)
+    
+bottom, top = plt.ylim()
+plt.ylim(bottom, top*1.05)
+
+#plt.tight_layout()
+
+#plt.savefig('rcvdpackets.png', dpi=120, bbox_inches='tight')
+plt.savefig('wifiperformance.png', dpi=120, bbox_inches='tight', transparent=True)
+]]></script>
             <dialogPage id="Main" label="Main"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <xswt xmlns:x="http://sweet_swt.sf.net/xswt">
 
@@ -736,55 +751,63 @@ Colors {
   </x:children>
 </xswt>]]></dialogPage>
             <property name="filter" value="name(packetReceived:count) AND ((&#10;    module(CoexistenceShowcase.wifiHost2.app[0])&#10;) AND NOT (&#10;    runattr:experiment(WpanOnly)&#10;))"/>
+            <property name="background_color" value=""/>
         </chart>
-        <chart icon="icons/full/obj/barchart.png" id="820" name="Bar Chart (Matplotlib)" template="barchart_mpl" type="MATPLOTLIB">
+        <chart icon="icons/full/obj/barchart.png" id="854" name="Wpan performance" template="barchart_mpl" type="MATPLOTLIB">
             <script><![CDATA[from omnetpp.scave import results, chart
 import matplotlib.pyplot as plt
 import pandas as pd
-import numpy as np
+from matplotlib.pyplot import xticks
 
 params = chart.get_properties()
 
 # This expression selects the results (you might be able to logically simplify it)
 filter_expression = params["filter"]
 
-coexistence_expression = """name(packetReceived:count) AND ((
-    module(CoexistenceShowcase.wifiHost2.app[0])
-) AND (
-    runattr:experiment(Coexistence)
-))"""
-
-wifionly_expression = """name(packetReceived:count) AND ((
-    module(CoexistenceShowcase.wifiHost2.app[0])
-) AND (
-    runattr:experiment(WifiOnly)
-))"""
-
 # The data is returned as a Pandas DataFrame
-df_c = results.get_scalars(coexistence_expression, include_attrs=True, include_runattrs=True, include_itervars=True)
-df_w = results.get_scalars(wifionly_expression, include_attrs=True, include_runattrs=True, include_itervars=True)
+df = results.get_scalars(filter_expression, include_attrs=True, include_runattrs=True, include_itervars=True)
 
 # You can perform any transformations on the data here
 
-print("coexistence",df_c)
-print("wifionly",df_w)
+print(df)
 
-coexistence_mean = np.mean(df_c['value'])
-wifionly_mean = np.mean(df_w['value'])
+title, legend = chart.extract_label_columns(df)
 
-print(df_c[0])
+for i, c in legend:
+    df[c] = pd.to_numeric(df[c], errors="ignore")
 
-newdf = pd.DataFrame([[coexistence_mean, wifionly_mean]])
-print(newdf)
+print(df)
+plt.title("WPAN performance")
 
-print(coexistence_mean, wifionly_mean)
-#if False:
-#    df = df.transpose()
+df = pd.pivot_table(df, index='experiment', values='value')
 
-newdf.plot(kind='bar', ax=plt.gca())
+df.sort_values(by="experiment", axis='index', inplace=True, ascending=False)
+print(df)
+
+df.columns=['Number of packets received']
+df.index=['WPAN only','Wifi+WPAN coexistence']
+
+df.plot(kind='bar', ax=plt.gca(), zorder=2, align='center', width=0.8, figsize=(8,6))
 
 plt.legend()
-plt.grid()]]></script>
+plt.grid(axis='y', linestyle='--')
+xticks(rotation=0)
+
+plt.xlabel('')
+
+ax = plt.gca()
+for p in ax.patches:
+    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height() - 2),
+                horizontalalignment='center', verticalalignment='top', color='white', size=12)
+    
+bottom, top = plt.ylim()
+plt.ylim(bottom, top*1.1)
+
+#plt.tight_layout()
+
+#plt.savefig('rcvdpackets.png', dpi=120, bbox_inches='tight')
+plt.savefig('wpanperformance.png', dpi=120, bbox_inches='tight', transparent=True)
+]]></script>
             <dialogPage id="Main" label="Main"><![CDATA[<?xml version="1.0" encoding="UTF-8"?>
 <xswt xmlns:x="http://sweet_swt.sf.net/xswt">
 
@@ -869,7 +892,8 @@ Colors {
     </text>
   </x:children>
 </xswt>]]></dialogPage>
-            <property name="filter" value="name(packetReceived:count) AND ((&#10;    module(CoexistenceShowcase.wifiHost2.app[0])&#10;) AND NOT (&#10;    runattr:experiment(WpanOnly)&#10;))"/>
+            <property name="filter" value="module(&quot;CoexistenceShowcase.wpanHost2.app[0]&quot;) AND name(packetReceived:count) AND ((runattr:experiment(WpanOnly) OR runattr:experiment(Coexistence)))"/>
+            <property name="background_color" value=""/>
         </chart>
     </charts>
 </analysis>
