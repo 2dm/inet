@@ -27,7 +27,7 @@
       </items>
     </datasets>
     <datasets name="No rate control">
-      <items xsi:type="scave:Add" filterPattern="name(throughput:vector) AND file(/inet/showcases/wireless/ratecontrol/results/General-rateControl=-#0.vec) " type="VECTOR"/>
+      <items xsi:type="scave:Add" filterPattern="name(throughput:vector) AND file(/inet/showcases/wireless/ratecontrol/results/General-rateControl=NoRateControl-#0.vec) " type="VECTOR"/>
       <items xsi:type="scave:Compute" operation="expression">
         <params name="expression" value="54000000"/>
       </items>
