@@ -4,10 +4,14 @@ Simulating VoIP Applications over the Real Network
 Goals
 -----
 
+TODO: what is the goal of THIS showcase really?
+TODO: sounds bad
 Voice over IP (VoIP) was developed in order to provide access to voice
 communication in any place around the world. Media streams are
-transported using special media delivery protocols that encode audio and
-video with audio codecs, and video codecs. INET framework features
+transported using special media delivery protocols that encode audio.
+
+TODO: is this needed?
+INET framework features
 various modules for emulating different models and scenarios, including
 VoIP traffic.
 
@@ -26,7 +30,7 @@ communications and multimedia sessions over Internet Protocol (IP)
 networks, such as the Internet.
 
 VoIP uses codecs to encapsulate audio into data packets, transmit the
-packets across an IP network and unencapsulate the packets back into
+packets across an IP network and decapsulate the packets back into
 audio at the other end of the connection. By eliminating the use of
 circuit-switched networks for voice, VoIP reduces network infrastructure
 costs, enables providers to deliver voice services over their broadband
@@ -36,13 +40,15 @@ and data network.
 The model
 ---------
 
-The ``ExtLowerUdp`` module makes it possible to divide the simulated model into
-two parts at the transport layer, exchange one part with real
+TODO:
 
-The ``ExtLowerUdp`` module makes it possible for the model to be extracted
-from the simulation and be used in a real operating environment. The
-model executes the configured behavior in the real world while still
-producing the same statistics as used to.
+.. The ``ExtLowerUdp`` module makes it possible to divide the simulated model into
+   two parts at the transport layer, exchange one part with real
+
+.. The ``ExtLowerUdp`` module makes it possible for the model to be extracted
+   from the simulation and be used in a real operating environment. The
+   model executes the configured behavior in the real world while still
+   producing the same statistics as used to.
 
 The network
 ~~~~~~~~~~~
