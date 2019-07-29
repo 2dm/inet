@@ -655,7 +655,7 @@ plt.xlabel('')
 
 ax = plt.gca()
 for p in ax.patches:
-    ax.annotate(str(p.get_height()), (p.get_x() + p.get_width() / 2, p.get_height() - 200),
+    ax.annotate(str(round(p.get_height(),2)), (p.get_x() + p.get_width() / 2, p.get_height() - 200),
                 horizontalalignment='center', verticalalignment='top', color='white', size=12)
     
 bottom, top = plt.ylim()
@@ -750,7 +750,7 @@ Colors {
     </text>
   </x:children>
 </xswt>]]></dialogPage>
-            <property name="filter" value="name(packetReceived:count) AND ((&#10;    module(CoexistenceShowcase.wifiHost2.app[0])&#10;) AND NOT (&#10;    runattr:experiment(WpanOnly)&#10;))"/>
+            <property name="filter" value="name(packetReceived:count) AND module(CoexistenceShowcase.wifiHost2.app[0])&#10;AND (  runattr:experiment(Coexistence) OR  runattr:experiment(WifiOnly) )"/>
             <property name="background_color" value=""/>
         </chart>
         <chart icon="icons/full/obj/barchart.png" id="854" name="Wpan performance" template="barchart_mpl" type="MATPLOTLIB">
