@@ -10,6 +10,14 @@ Voice over IP (VoIP) was developed in order to provide access to voice
 communication in any place around the world. Media streams are
 transported using special media delivery protocols that encode audio.
 
+  want to say:
+
+  - INET is used to emulate VoIP traffic
+  - There are modules that do that realistically, that is they take a sound file, encode it, fragment it, and send it via UDP. On the other side, the sound file is reconstructed, while simulating VoIP effects, such as de-jitter buffering and discarding timed-out packets
+  - This showcase demonstrates this; the UDP packets are sent via the real network stack of the host OS
+  - The simulated sender and receiver could run on different machines, while the traffic is sent via the real network
+  - There are actually two emulation features here; VoIP encoding and traffic emulation, and UDP emulation
+
 TODO: is this needed?
 INET framework features
 various modules for emulating different models and scenarios, including
