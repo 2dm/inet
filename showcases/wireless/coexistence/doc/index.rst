@@ -251,8 +251,8 @@ the default flat signal shape is used in time. In frequency, we'll use a more re
 We'll use the approximation indicated with red. Here is the ``frequencyGains`` parameter value specifying this spectrum:
 
 .. literalinclude:: ../omnetpp.ini
-   :start-at: wpanHost*.wlan[*].radio.transmitter.frequencyGains = "smaller c-5MHz
-   :end-at: wpanHost*.wlan[*].radio.transmitter.frequencyGains = "smaller c-5MHz
+   :start-at: wpanHost*.wlan[*].radio.transmitter.frequencyGains = "left c-5MHz
+   :end-at: wpanHost*.wlan[*].radio.transmitter.frequencyGains = "left c-5MHz
    :language: ini
 
 The default carrier frequency (2450 MHz) and bandwidth (2.8 MHz) is not changed.
