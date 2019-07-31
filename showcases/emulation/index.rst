@@ -56,7 +56,7 @@ world (communication). This is achieved in INET as the following:
     scheduler class responsible for synchronization. Using this method, the
     simulation is run according to real time.
 
-  - ``OppClock``: A hypothetical method; the clocks of real applications running on the host OS are synchronized to the clock of the simulation.
+  - (``OppClock``: A hypothetical method; the clocks of real applications running on the host OS are synchronized to the clock of the simulation. Note that this is just an idea; it's not available yet.)
 
 -  Communication:
 
