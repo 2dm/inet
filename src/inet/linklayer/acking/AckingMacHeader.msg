@@ -32,7 +32,7 @@ class AckingMacHeader extends FieldsChunk
     chunkLength = B(16);
     MacAddress src;     // source address
     MacAddress dest;    // destination address
-    int srcModuleId;    // technical data, uses instead of sending back an ACK packet
-    int networkProtocol = -1;
+    int16_t srcModuleId;    // technical data, uses instead of sending back an ACK packet
+    int16_t networkProtocol = -1;
 }
 
