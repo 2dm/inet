@@ -10,6 +10,13 @@ Voice over IP (VoIP) was developed in order to provide access to voice
 communication in any place around the world. Media streams are
 transported using special media delivery protocols that encode audio.
 
+.. INET can be used to test how a real network affects VoIP traffic.
+
+INET can be used to test a real network with realistic, simulated VoIP traffic.
+One can examine how the quality of real audio is affected as it traverses the network.
+
+This showcase demonstrates
+
   want to say:
 
   - INET is used to emulate VoIP traffic
@@ -17,6 +24,20 @@ transported using special media delivery protocols that encode audio.
   - This showcase demonstrates this; the UDP packets are sent via the real network stack of the host OS
   - The simulated sender and receiver could run on different machines, while the traffic is sent via the real network
   - There are actually two emulation features here; VoIP encoding and traffic emulation, and UDP emulation
+
+  why is it good?
+
+  - you can hear how the transmission affects the audio (thats why the voip is good)
+  - you can test a real network with voip traffic
+  - what effect a real network has on voip traffic
+  - test voip traffic in real (or simulated) network conditions and how it affects the audio
+  - so to sum it up, INET can emulate VoIP traffic and send it through a real network (?)
+
+what are we emulating?
+in the network part, emulating the udp
+in the voip part, emulating the a voip protocol...that is, from the point of view of the real world, it could be a real voip protocol. the packets are similar
+so we're emulating voip traffic
+and udp traffic?
 
 TODO: is this needed?
 INET framework features
@@ -29,24 +50,60 @@ over a real network using INET components.
 | INET version: ``4.0``
 | Source files location: `inet/showcases/emulation/ExtUdpVoip <https://github.com/inet-framework/inet-showcases/tree/master/emulation/osudpVoip>`__
 
-About VoIP
-----------
+.. About VoIP
+   ----------
 
-Voice over Internet Protocol (also voice over IP, VoIP or IP telephony)
-is a methodology and group of technologies for the delivery of voice
-communications and multimedia sessions over Internet Protocol (IP)
-networks, such as the Internet.
+   Voice over Internet Protocol (also voice over IP, VoIP or IP telephony)
+   is a methodology and group of technologies for the delivery of voice
+   communications and multimedia sessions over Internet Protocol (IP)
+   networks, such as the Internet.
 
-VoIP uses codecs to encapsulate audio into data packets, transmit the
-packets across an IP network and decapsulate the packets back into
-audio at the other end of the connection. By eliminating the use of
-circuit-switched networks for voice, VoIP reduces network infrastructure
-costs, enables providers to deliver voice services over their broadband
-and private networks and allows enterprises to operate a single voice
-and data network.
+   VoIP uses codecs to encapsulate audio into data packets, transmit the
+   packets across an IP network and decapsulate the packets back into
+   audio at the other end of the connection. By eliminating the use of
+   circuit-switched networks for voice, VoIP reduces network infrastructure
+   costs, enables providers to deliver voice services over their broadband
+   and private networks and allows enterprises to operate a single voice
+   and data network.
 
 The model
 ---------
+
+- why is it good (?)
+- voip stream
+
+- INET is used to emulate VoIP traffic
+- There are modules that do that realistically, that is they take a sound file, encode it, fragment it, and send it via UDP. On the other side, the sound file is reconstructed, while simulating VoIP effects, such as de-jitter buffering and discarding timed-out packets
+- This showcase demonstrates this; the UDP packets are sent via the real network stack of the host OS
+- The simulated sender and receiver could run on different machines, while the traffic is sent via the real network
+- There are actually two emulation features here; VoIP encoding and traffic emulation, and UDP emulation
+
+.. INET can be used to emulate VoIP traffic. The :ned:`VoipStreamSender` module can do that realistically, i.e. it can encode an audio file
+
+.. The :ned:`VoipStreamSender` module can emulate realistic VoIP traffic. The module takes an audio file,
+
+.. The module takes the contents of an audio file and transmits it as voip traffic.
+
+The :ned:`VoipStreamSender` module transmits the contents of an audio file as voip traffic. It resamples the audio, encodes it with a codec, fragments it and sends the fragments via udp. By default, it creates 20 ms long fragments, and sends a fragment every 20 ms.
+
+The :ned:`VoipStreamReceiver` module can receive this data stream, decode it and save it as an audio file.
+
+- more details about the voip modules, such as simulating de jitter buffer
+- what can be configured with parameters in the sender
+
+The voip stream sender generates application packets, which are encapsulated in UDP packets and sent by the ext udp module. Simulated UDP packets enter the module, which injects them into the host OS protocol stack via a UDP socket.
+
+.. figure:: media/setup.png
+   :align: center
+   :width: 60%
+
+.. encodes it, fragments it and sends the fragments via UDP.
+
+- the setup + ext udp
+- schematic
+
+- network
+- configuration
 
 TODO:
 
@@ -73,13 +130,13 @@ There are only two modules per "network". There is a
 Both Applications contain a ``ExtLowerUdp`` module, called ``udp``. The
 layout of the two applications can be seen in the following image:
 
-+----------------------------------------------+--+---------------------------------------------+
-|        Voip Stream Sender Application        |  |      Voip Stream Receiver Application       |
-+==============================================+==+=============================================+
++----------------------------------------------------+--+---------------------------------------------------+
+|        Voip Stream Sender Application              |  |      Voip Stream Receiver Application             |
++====================================================+==+===================================================+
 |.. image:: media/VoipStreamSenderApplication.png    |  |.. image:: media/VoipStreamReceiverApplication.png |
-|   :width: 100%                               |  |   :width: 100%                              |
-|   :align: center                             |  |   :align: center                            |
-+----------------------------------------------+--+---------------------------------------------+
+|   :width: 100%                                     |  |   :width: 100%                                    |
+|   :align: center                                   |  |   :align: center                                  |
++----------------------------------------------------+--+---------------------------------------------------+
 
 These two simulations work completely separated from each other, meaning
 that they could also be run on different devices. However, for the sake
