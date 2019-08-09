@@ -84,7 +84,28 @@ The model
 
 .. The module takes the contents of an audio file and transmits it as voip traffic.
 
-The :ned:`VoipStreamSender` module transmits the contents of an audio file as voip traffic. It resamples the audio, encodes it with a codec, fragments it and sends the fragments via udp. By default, it creates 20 ms long fragments, and sends a fragment every 20 ms.
+.. the scenario:
+
+.. - In the emulation scenario, we transmit real audio with a simulated VoIP application.
+
+In the emulation scenario, we use real audio to generate realistic VoIP traffic using a simulated VoIP application. We'll simulate the VoIP sender and receiver applications; however, the traffic will be sent in a real network over UDP. In this scenario, we'll use the protocol stack of the host machine running the simulation for simplicity, but the traffic could be sent over any real network. Also, the sender and receiver applications could be running on different machines.
+
+We'll send an audio file as VoIP traffic; the received re-encoded audio file and the original can be compared to examine the effects **of the whole thing TODO**
+
+So actually, there are two emulation concepts in this scenario. First, we emulate VoIP traffic by re-encoding an audio file with a VoIP protocol (as opposed to sending dummy data packets).
+Secondly, we emulate the UDP traffic as well (creating UDP packets in the simulation and sending them over a real network).
+
+**TODO we can check the received audio and compare it to the original (not here?)**
+
+.. figure:: media/setup.png
+   :align: center
+   :width: 60%
+
+Note that the division of the simulated and real parts of the setup is arbitrary; INET has support for dividing the network at other levels of the protocol stack. For example, this scenario could be achieved with just the low level physical layer transmissions in the real world, and simulating everything else (from the Link layer and up).
+
+To generate the realistic VoIP traffic, we'll use the :ned:`VoipStreamSender` and :ned:`VoipStreamReceiver` modules.
+
+The :ned:`VoipStreamSender` module transmits the contents of an audio file as voip traffic. It resamples the audio, encodes it with a codec, fragments it and sends the fragments via udp. By default, it creates 20 ms long fragments, and sends a fragment every 20 ms. **TODO chunks instead of fragments to avoid confusion**
 
 The :ned:`VoipStreamReceiver` module can receive this data stream, decode it and save it as an audio file.
 
@@ -98,11 +119,7 @@ The voip stream sender generates application packets, which are encapsulated in 
 - then it travels in the host os network stack via the loopback interface to the other udp socket at the receiver side
 - the receiver ext udp interface will inject the packet back to the simulation
 - and the receiver voipstreamreceiver will decode it
-- the voipstreamreceiver will receive the udp packets, and create an audio file when all data arrives (at the end of the simulation)(**TODO are the sim time limits set ?**)
-
-.. figure:: media/setup.png
-   :align: center
-   :width: 60%
+- the voipstreamreceiver will receive the udp packets, and create an audio file when all data arrives (at the end of the simulation)
 
 .. encodes it, fragments it and sends the fragments via UDP.
 
