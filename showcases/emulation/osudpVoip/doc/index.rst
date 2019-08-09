@@ -4,18 +4,18 @@ Simulating VoIP Applications over the Real Network
 Goals
 -----
 
-TODO: what is the goal of THIS showcase really?
-TODO: sounds bad
-Voice over IP (VoIP) was developed in order to provide access to voice
-communication in any place around the world. Media streams are
-transported using special media delivery protocols that encode audio.
+.. TODO: what is the goal of THIS showcase really?
+   TODO: sounds bad
+   Voice over IP (VoIP) was developed in order to provide access to voice
+   communication in any place around the world. Media streams are
+   transported using special media delivery protocols that encode audio.
 
 .. INET can be used to test how a real network affects VoIP traffic.
 
 INET can be used to test a real network with realistic, simulated VoIP traffic.
 One can examine how the quality of real audio is affected as it traverses the network.
 
-This showcase demonstrates
+This showcase demonstrates **TODO**
 
   want to say:
 
@@ -33,11 +33,11 @@ This showcase demonstrates
   - test voip traffic in real (or simulated) network conditions and how it affects the audio
   - so to sum it up, INET can emulate VoIP traffic and send it through a real network (?)
 
-what are we emulating?
-in the network part, emulating the udp
-in the voip part, emulating the a voip protocol...that is, from the point of view of the real world, it could be a real voip protocol. the packets are similar
-so we're emulating voip traffic
-and udp traffic?
+  what are we emulating?
+  in the network part, emulating the udp
+  in the voip part, emulating the a voip protocol...that is, from the point of view of the real world, it could be a real voip protocol. the packets are similar
+  so we're emulating voip traffic
+  and udp traffic?
 
 TODO: is this needed?
 INET framework features
@@ -92,6 +92,13 @@ The :ned:`VoipStreamReceiver` module can receive this data stream, decode it and
 - what can be configured with parameters in the sender
 
 The voip stream sender generates application packets, which are encapsulated in UDP packets and sent by the ext udp module. Simulated UDP packets enter the module, which injects them into the host OS protocol stack via a UDP socket.
+
+- we'll take a real audio file, and hand it over to the voipstreamsender.
+- which is simulated. it will send it to the ext udp, which sends it to the host os protocol stack
+- then it travels in the host os network stack via the loopback interface to the other udp socket at the receiver side
+- the receiver ext udp interface will inject the packet back to the simulation
+- and the receiver voipstreamreceiver will decode it
+- the voipstreamreceiver will receive the udp packets, and create an audio file when all data arrives (at the end of the simulation)(**TODO are the sim time limits set ?**)
 
 .. figure:: media/setup.png
    :align: center
