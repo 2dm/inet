@@ -23,24 +23,34 @@ Register_Serializer(SimpleVoipPacket, SimpleVoipPacketSerializer);
 
 void SimpleVoipPacketSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const
 {
+    B startPos = B(stream.getLength());
 	const auto& simpleVoipPacket = staticPtrCast<const SimpleVoipPacket>(chunk);
+	uint16_t totalLengthField = simpleVoipPacket->getTotalLengthField();
+	if (totalLengthField < 30)
+	    throw cRuntimeError("totalLengthField is smaller than required (30), try to increase the talkPacketSize parameter.");
+	stream.writeUint16Be(totalLengthField);
 	stream.writeUint32Be(simpleVoipPacket->getTalkspurtID());
 	stream.writeUint32Be(simpleVoipPacket->getTalkspurtNumPackets());
 	stream.writeUint32Be(simpleVoipPacket->getPacketID());
-	stream.writeUint64Be(simpleVoipPacket->getVoipTimestamp().raw());
-	stream.writeUint64Be(simpleVoipPacket->getVoiceDuration().raw());
-	ASSERT(simpleVoipPacket->getChunkLength() == B(28));
+	stream.writeUint64Be(simpleVoipPacket->getVoipTimestamp().inUnit(SIMTIME_MS));
+	stream.writeUint64Be(simpleVoipPacket->getVoiceDuration().inUnit(SIMTIME_MS));
+	while (B(stream.getLength()) - startPos < B(totalLengthField))
+	    stream.writeByte('?');
 }
 
 const Ptr<Chunk> SimpleVoipPacketSerializer::deserialize(MemoryInputStream& stream) const
 {
 	auto simpleVoipPacket = makeShared<SimpleVoipPacket>();
+	uint16_t totalLengthField = stream.readUint16Be();
+	simpleVoipPacket->setTotalLengthField(totalLengthField);
+	simpleVoipPacket->setChunkLength(B(totalLengthField));
 	simpleVoipPacket->setTalkspurtID(stream.readUint32Be());
 	simpleVoipPacket->setTalkspurtNumPackets(stream.readUint32Be());
 	simpleVoipPacket->setPacketID(stream.readUint32Be());
-	simpleVoipPacket->setVoipTimestamp(SimTime().setRaw(stream.readUint64Be()));
-	simpleVoipPacket->setVoiceDuration(SimTime().setRaw(stream.readUint64Be()));
-	simpleVoipPacket->setChunkLength(B(28));
+	simpleVoipPacket->setVoipTimestamp(SimTime(stream.readUint64Be(), SIMTIME_MS));
+	simpleVoipPacket->setVoiceDuration(SimTime(stream.readUint64Be(), SIMTIME_MS));
+	while (B(stream.getRemainingLength()) > B(0))
+	    stream.readByte();
 	return simpleVoipPacket;
 }
 
