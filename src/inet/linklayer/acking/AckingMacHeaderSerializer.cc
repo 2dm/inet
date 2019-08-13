@@ -35,7 +35,7 @@ void AckingMacHeaderSerializer::serialize(MemoryOutputStream& stream, const Ptr<
     stream.writeMacAddress(macHeader->getSrc());
     stream.writeMacAddress(macHeader->getDest());
     stream.writeUint16Be(macHeader->getNetworkProtocol());
-    stream.writeUint16Be(macHeader->getSrcModuleId());
+    stream.writeUint64Be(macHeader->getSrcModuleId());
     int64_t remainders = B(macHeader->getChunkLength() - (stream.getLength() - startPosition)).get();
     if (remainders < 0)
         throw cRuntimeError("AckingMacHeader length = %d smaller than required %d bytes", (int)B(macHeader->getChunkLength()).get(), (int)B(stream.getLength() - startPosition).get());
@@ -48,7 +48,7 @@ const Ptr<Chunk> AckingMacHeaderSerializer::deserialize(MemoryInputStream& strea
     macHeader->setSrc(stream.readMacAddress());
     macHeader->setDest(stream.readMacAddress());
     macHeader->setNetworkProtocol(stream.readUint16Be());
-    macHeader->setSrcModuleId(stream.readUint16Be());
+    macHeader->setSrcModuleId(stream.readUint64Be());
     B remainders = stream.getRemainingLength();
     ASSERT(remainders >= B(0));
     stream.readByteRepeatedly('?', B(remainders).get());
