@@ -29,10 +29,10 @@ namespace inet;
 //
 class AckingMacHeader extends FieldsChunk
 {
-    chunkLength = B(16);
+    chunkLength = B(22);
     MacAddress src;     // source address
     MacAddress dest;    // destination address
-    int16_t srcModuleId;    // technical data, uses instead of sending back an ACK packet
-    int16_t networkProtocol = -1;
+    int srcModuleId;    // technical data, uses instead of sending back an ACK packet
+    int networkProtocol = -1;
 }
 
