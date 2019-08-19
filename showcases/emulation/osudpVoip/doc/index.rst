@@ -90,6 +90,8 @@ The model
 
 In the emulation scenario, we use real audio to generate realistic VoIP traffic using a simulated VoIP application. We'll simulate the VoIP sender and receiver applications; however, the traffic will be sent in a real network over UDP. In this scenario, we'll use the protocol stack of the host machine running the simulation for simplicity, but the traffic could be sent over any real network. Also, the sender and receiver applications could be running on different machines.
 
+**TODO ExtLowerUdp**
+
 We'll send an audio file as VoIP traffic; the received re-encoded audio file and the original can be compared to examine the effects **of the whole thing TODO**
 
 So actually, there are two emulation concepts in this scenario. First, we emulate VoIP traffic by re-encoding an audio file with a VoIP protocol (as opposed to sending dummy data packets).
@@ -105,14 +107,17 @@ Note that the division of the simulated and real parts of the setup is arbitrary
 
 To generate the realistic VoIP traffic, we'll use the :ned:`VoipStreamSender` and :ned:`VoipStreamReceiver` modules.
 
-The :ned:`VoipStreamSender` module transmits the contents of an audio file as voip traffic. It resamples the audio, encodes it with a codec, fragments it and sends the fragments via udp. By default, it creates 20 ms long fragments, and sends a fragment every 20 ms. **TODO chunks instead of fragments to avoid confusion**
+The :ned:`VoipStreamSender` module transmits the contents of an audio file as voip traffic. It resamples the audio, encodes it with a codec, chops it into packets and sends the packets via udp. By default, it creates packets containing 20 ms of audio, and sends a packet every 20 ms.
+The codec, the sample rate and dept, the time length of the audio packets, and other settings can be specified by parameters.
 
-The :ned:`VoipStreamReceiver` module can receive this data stream, decode it and save it as an audio file.
+.. **TODO chunks instead of fragments to avoid confusion -> actually, that would cause confusion as well**
 
-- more details about the voip modules, such as simulating de jitter buffer
-- what can be configured with parameters in the sender
+The :ned:`VoipStreamReceiver` module can receive this data stream, decode it and save it as an audio file. The module numbers the incoming packets, and discards out-of-order ones. There is a playout delay (specified by parameter; by default 20 ms) simulating a de-jitter buffer.
 
-The voip stream sender generates application packets, which are encapsulated in UDP packets and sent by the ext udp module. Simulated UDP packets enter the module, which injects them into the host OS protocol stack via a UDP socket.
+.. - more details about the voip modules, such as simulating de jitter buffer
+   - what can be configured with parameters in the sender
+
+The :ned:`VoipStreamSender` generates application packets, which are encapsulated in UDP packets and sent by the :ned:`ExtLowerUdp` module. Simulated UDP packets enter the module, which injects them into the host OS protocol stack via a UDP socket.
 
 - we'll take a real audio file, and hand it over to the voipstreamsender.
 - which is simulated. it will send it to the ext udp, which sends it to the host os protocol stack
@@ -142,20 +147,30 @@ TODO:
 The network
 ~~~~~~~~~~~
 
-Usually a network in a simulation contains some nodes and connections in
-between. In this case, it is different. Only a simulated sender
-application and a simulated receiver application are needed in order to
+.. Usually a network in a simulation contains some nodes and connections in
+   between. In this case, it is different. Only a simulated sender
+   application and a simulated receiver application are needed in order to
+   send the packets into the real network on one side and receive them on
+   the other side.
+
+**TODO the application terminology might cause some confusion**
+
+In this scenario, only the VoIP application modules and the Ext udp modules are simulated.
+In the simulation, only a sender
+node and a receiver node are needed in order to
 send the packets into the real network on one side and receive them on
-the other side.
+the other side. Each node is defined in a network in the NED file.
+Since the two nodes are separete, they are run in separate simulations.
+**TODO**
 
 There are only two modules per "network". There is a
-``VoipStreamSender`` in the sender application and a
-``VoipStreamReceiver`` in the receiver application, both called ``app``.
-Both Applications contain a ``ExtLowerUdp`` module, called ``udp``. The
-layout of the two applications can be seen in the following image:
+``VoipStreamSender`` in the sender node and a
+``VoipStreamReceiver`` in the receiver node, both called ``app``.
+Both nodes contain a ``ExtLowerUdp`` module, called ``udp``. The
+layout of the two nodes can be seen in the following image:
 
 +----------------------------------------------------+--+---------------------------------------------------+
-|        Voip Stream Sender Application              |  |      Voip Stream Receiver Application             |
+|        Voip Stream Sender Node                     |  |      Voip Stream Receiver Node                    |
 +====================================================+==+===================================================+
 |.. image:: media/VoipStreamSenderApplication.png    |  |.. image:: media/VoipStreamReceiverApplication.png |
 |   :width: 100%                                     |  |   :width: 100%                                    |
@@ -166,12 +181,12 @@ These two simulations work completely separated from each other, meaning
 that they could also be run on different devices. However, for the sake
 of simplicity, during this showcase both are run on the same computer.
 As the names of the applications indicate, the
-``VoipStreamSenderApplication`` produces a VoIP traffic and sends the
-packets to the ``VoipStreamReceiverApplication`` as destination, while
-the ``VoipStreamReceiverApplication`` receives and processes the VoIP
+``VoipStreamSenderNode`` produces a VoIP traffic and sends the
+packets to the ``VoipStreamReceiverNode`` as destination, while
+the ``VoipStreamReceiverNode`` receives and processes the VoIP
 packets.
 
-The simulation is run until all the packets arrive.
+The simulation is run until all packets arrive. **TODO not here**
 
 Configuration and behaviour
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~

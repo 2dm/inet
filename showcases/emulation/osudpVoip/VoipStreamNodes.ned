@@ -19,7 +19,7 @@ import inet.applications.voipstream.VoipStreamReceiver;
 import inet.applications.voipstream.VoipStreamSender;
 import inet.emulation.transportlayer.udp.ExtLowerUdp;
 
-network VoipStreamSenderApplication
+network VoipStreamSenderNode
 {
     parameters:
         @networkNode;
@@ -31,7 +31,7 @@ network VoipStreamSenderApplication
         app.socketIn <-- udp.appOut;
 }
 
-network VoipStreamReceiverApplication
+network VoipStreamReceiverNode
 {
     parameters:
         @networkNode;
