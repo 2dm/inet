@@ -27,43 +27,53 @@ Register_Serializer(Ieee80211PhyHeader, Ieee80211PhyHeaderSerializer);
 Register_Serializer(Ieee80211FhssPhyHeader, Ieee80211PhyHeaderSerializer);
 Register_Serializer(Ieee80211IrPhyHeader, Ieee80211PhyHeaderSerializer);
 Register_Serializer(Ieee80211DsssPhyHeader, Ieee80211PhyHeaderSerializer);
+Register_Serializer(Ieee80211HrDsssPhyHeader, Ieee80211PhyHeaderSerializer);
 Register_Serializer(Ieee80211OfdmPhyHeader, Ieee80211PhyHeaderSerializer);
 Register_Serializer(Ieee80211HtPhyHeader, Ieee80211PhyHeaderSerializer);
 Register_Serializer(Ieee80211VhtPhyHeader, Ieee80211PhyHeaderSerializer);
 
 void Ieee80211PhyHeaderSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const
 {
-    const auto& phyHeader = staticPtrCast<const Ieee80211PhyHeader>(chunk);
     if (auto ofdmPhyHeader = dynamicPtrCast<const Ieee80211OfdmPhyHeader>(chunk)) {
         stream.writeUint4(ofdmPhyHeader->getRate());
-        stream.writeBit(false);
-        stream.writeUint4((uint8_t)(ofdmPhyHeader->getLengthField().get() >> 8));
-        stream.writeUint4((uint8_t)(ofdmPhyHeader->getLengthField().get() >> 4));
-        stream.writeUint4((uint8_t)(ofdmPhyHeader->getLengthField().get() >> 0));
-        stream.writeBit(false);
-        stream.writeBitRepeatedly(false, 6);
-        stream.writeUint16Be(0);
+        stream.writeBit(ofdmPhyHeader->getReserved());
+        stream.writeNBitsOfUint64Be(B(ofdmPhyHeader->getLengthField()).get(), 12);
+        stream.writeBit(ofdmPhyHeader->getParity());
+        stream.writeNBitsOfUint64Be(ofdmPhyHeader->getTail(), 6);
+        stream.writeUint16Be(ofdmPhyHeader->getService());
     }
-    else {
-        // TODO: KLUDGE:
-        stream.writeByteRepeatedly('?', B(phyHeader->getChunkLength()).get());
+    else if (auto dsssPhyHeader = dynamicPtrCast<const Ieee80211DsssPhyHeader>(chunk)) {
+        stream.writeByte(dsssPhyHeader->getSignal());
+        stream.writeByte(dsssPhyHeader->getService());
+        stream.writeUint16Be(B(dsssPhyHeader->getLengthField()).get());
     }
+    else if (auto fhssPhyHeader = dynamicPtrCast<const Ieee80211FhssPhyHeader>(chunk)) {
+        stream.writeNBitsOfUint64Be(fhssPhyHeader->getPlw(), 12);
+        stream.writeUint4(fhssPhyHeader->getPsf());
+        stream.writeUint16Be(fhssPhyHeader->getCrc());
+    }
+    else
+        throw cRuntimeError("Ieee80211PhyHeaderSerializer: cannot serialize the frame, serializer not implemented yet.");
 }
 
 const Ptr<Chunk> Ieee80211PhyHeaderSerializer::deserialize(MemoryInputStream& stream) const
 {
-    if (true) { // TODO: KLUDGE:
+    if (B(stream.getRemainingLength()) == B(4)) {
+        // TODO: KLUDGE (could be Ieee80211FhssPhyHeader as well)
+        auto dsssPhyHeader = makeShared<Ieee80211DsssPhyHeader>();
+        dsssPhyHeader->setSignal(stream.readByte());
+        dsssPhyHeader->setService(stream.readByte());
+        dsssPhyHeader->setLengthField(B(stream.readUint16Be()));
+        return dsssPhyHeader;
+    }
+    else if (true) { // TODO: KLUDGE:
         auto ofdmPhyHeader = makeShared<Ieee80211OfdmPhyHeader>();
         ofdmPhyHeader->setRate(stream.readUint4());
-        stream.readBit();
-        uint16_t lengthField = 0;
-        lengthField |= ((uint16_t)stream.readUint4()) << 8;
-        lengthField |= ((uint16_t)stream.readUint4()) << 4;
-        lengthField |= ((uint16_t)stream.readUint4()) << 0;
-        ofdmPhyHeader->setLengthField(B(lengthField));
-        stream.readBit();
-        stream.readBitRepeatedly(false, 6);
-        stream.readUint16Be();
+        ofdmPhyHeader->setReserved(stream.readBit());
+        ofdmPhyHeader->setLengthField(B(stream.readNBitsToUint64Be(12)));
+        ofdmPhyHeader->setParity(stream.readBit());
+        ofdmPhyHeader->setTail(stream.readNBitsToUint64Be(6));
+        ofdmPhyHeader->setService(stream.readUint16Be());
         return ofdmPhyHeader;
     }
     else {
