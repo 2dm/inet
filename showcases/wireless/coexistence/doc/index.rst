@@ -225,6 +225,17 @@ Briefly about the syntax:
 
 For more on the syntax, see :ned:`DimensionalTransmitterBase.ned`.
 
+  - when there is interference, the snir is important for calculating reception
+  - we set the SNIR mode to mean, because it might lead to a more realistic interference calculation (if we calculated with the min snir, a short spike might run a transmission)
+  - this is set in the receiver. and also, in the error model
+  - is that correct like that ?
+
+  - they overlap in frequency, but its not substantial from the perspective of the wifi
+  - they overlap in time, but its not substantial from the perspective of the wpan
+
+  - so there are small overlaps, we need to set the snir more to mean
+  - so it is more realistic...a small overlap doesnt ruin the reception
+
 .. **TODO**
 
    - about how to specify the psu
@@ -388,28 +399,29 @@ It looks like the following when the simulation is run:
    :width: 90%
    :align: center
 
-The hosts using the two wireless technologies detect each others' transmissions (but cannot receive them),
-and this causes them to defer from transmitting. Sometimes they transmit at the same time, and the
-transmissions can interfere and corrupt one another.
+**TODO**
+  The hosts using the two wireless technologies detect each others' transmissions (but cannot receive them),
+  and this causes them to defer from transmitting. Sometimes they transmit at the same time, and the
+  transmissions can interfere and corrupt one another.
 
-The Wifi hosts have the MAC contention state, and the WPAN hosts have the MAC state
-displayed above them, using :ned:`InfoVisualizer`. At first, ``wifiHost1``
-starts transmitting, sending UDP packets. (Note that the MAC contention state is IDLE while
-the host is transmitting, as the MAC is not deferring or backing off.) ``wpanHost1`` wants to transmit,
-so it waits in a backoff state. When the Wifi host transmits its third packet,
-the WPAN host switches to Clear channel assessment (CCA) mode. It perceives
-the channel as free, so it starts transmitting. ``wifiHost1`` senses the
-transmission and defers from transmitting itself. ``wpanHost2`` receives
-the packet correctly (indicated by both physical and data link layer activity arrows showing)
-and sends an ACK, but ``wifiHost2`` starts transmitting concurrently with
-the ACK, resulting in interfering transmissions. ``wifiHost2`` receives its
-transmission correctly, but ``wpanHost2`` doesn't (the incorrectly received
-packet is dropped, indicated by the packet drop animation). Eventually,
-``wpanHost1`` transmits the packet again (``wifiHost1`` defers),
-and ``wpanHost2`` receives the transmission correctly. There is no
-data link activity arrow because ``wpanHost2`` already received that packet,
-it just didn't ACK it successfully yet. Thus, it sends an ACK, which is successfully
-received this time.
+  The Wifi hosts have the MAC contention state, and the WPAN hosts have the MAC state
+  displayed above them, using :ned:`InfoVisualizer`. At first, ``wifiHost1``
+  starts transmitting, sending UDP packets. (Note that the MAC contention state is IDLE while
+  the host is transmitting, as the MAC is not deferring or backing off.) ``wpanHost1`` wants to transmit,
+  so it waits in a backoff state. When the Wifi host transmits its third packet,
+  the WPAN host switches to Clear channel assessment (CCA) mode. It perceives
+  the channel as free, so it starts transmitting. ``wifiHost1`` senses the
+  transmission and defers from transmitting itself. ``wpanHost2`` receives
+  the packet correctly (indicated by both physical and data link layer activity arrows showing)
+  and sends an ACK, but ``wifiHost2`` starts transmitting concurrently with
+  the ACK, resulting in interfering transmissions. ``wifiHost2`` receives its
+  transmission correctly, but ``wpanHost2`` doesn't (the incorrectly received
+  packet is dropped, indicated by the packet drop animation). Eventually,
+  ``wpanHost1`` transmits the packet again (``wifiHost1`` defers),
+  and ``wpanHost2`` receives the transmission correctly. There is no
+  data link activity arrow because ``wpanHost2`` already received that packet,
+  it just didn't ACK it successfully yet. Thus, it sends an ACK, which is successfully
+  received this time.
 
 .. **TODO is this still correct?**
 
@@ -444,10 +456,11 @@ Here are the performance results:
    :width: 70%
    :align: center
 
-In this particular scenario, the performance of both technologies is decreased,
-by about 10 percent, compared to the base performance.
-Note that the fractional number of packets is due to
-the averaging of the repetitions.
+**TODO**
+  In this particular scenario, the performance of both technologies is decreased,
+  by about 10 percent, compared to the base performance.
+  Note that the fractional number of packets is due to
+  the averaging of the repetitions.
 
 .. .. note::
 
