@@ -33,6 +33,8 @@ void NonQoSSequenceNumberAssignment::assignSequenceNumber(const Ptr<Ieee80211Dat
             lastSeqNum = lastSeqNum + 1; // make it different from the last sequence number sent to that RA (spec: "add 2")
         it->second = lastSeqNum;
     }
+    if (lastSeqNum > 15)
+        lastSeqNum = 0;
     header->setSequenceNumber(lastSeqNum);
 }
 

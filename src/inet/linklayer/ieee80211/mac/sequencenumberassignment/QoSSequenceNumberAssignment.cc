@@ -71,7 +71,8 @@ void QoSSequenceNumberAssignment::assignSequenceNumber(const Ptr<Ieee80211DataOr
     }
     else
         ASSERT(false);
-
+    if (seqNum > 15)
+        seqNum = 0;
     header->setSequenceNumber(seqNum);
 }
 

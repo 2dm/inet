@@ -29,6 +29,8 @@ void LegacySequenceNumberAssigment::assignSequenceNumber(const Ptr<Ieee80211Data
 {
     ASSERT(header->getType() != ST_DATA_WITH_QOS);
     lastSeqNum = lastSeqNum + 1;
+    if (lastSeqNum > 15)
+        lastSeqNum = 0;
     header->setSequenceNumber(lastSeqNum);
 }
 
