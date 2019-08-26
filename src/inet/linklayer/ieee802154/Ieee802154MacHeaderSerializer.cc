@@ -23,12 +23,13 @@ Register_Serializer(Ieee802154MacHeader, Ieee802154MacHeaderSerializer);
 
 void Ieee802154MacHeaderSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const
 {
+    B startPos = B(stream.getLength());
     const auto& macHeader = staticPtrCast<const Ieee802154MacHeader>(chunk);
     stream.writeByte(macHeader->getSequenceId());
     stream.writeMacAddress(macHeader->getSrcAddr());
     stream.writeMacAddress(macHeader->getDestAddr());
     stream.writeUint16Be(macHeader->getNetworkProtocol());
-    for (int i = 0; i < B(macHeader->getChunkLength()).get() - 1; ++i)
+    while (B(macHeader->getChunkLength()) > B(stream.getLength()) - startPos)
         stream.writeByte(0);
 }
 
