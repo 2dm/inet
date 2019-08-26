@@ -29,6 +29,8 @@ void Ieee802154MacHeaderSerializer::serialize(MemoryOutputStream& stream, const 
     stream.writeMacAddress(macHeader->getSrcAddr());
     stream.writeMacAddress(macHeader->getDestAddr());
     stream.writeUint16Be(macHeader->getNetworkProtocol());
+    if ((B(stream.getLength()) - startPos) > B(macHeader->getChunkLength()))
+        throw cRuntimeError("Ieee802154MacHeader length = %d smaller than required %d bytes, try to increase the 'headerLength' parameter", (int)B(macHeader->getChunkLength()).get(), (int)B(stream.getLength() - startPos).get());
     while (B(macHeader->getChunkLength()) > B(stream.getLength()) - startPos)
         stream.writeByte(0);
 }
