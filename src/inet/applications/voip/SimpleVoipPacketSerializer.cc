@@ -40,6 +40,7 @@ void SimpleVoipPacketSerializer::serialize(MemoryOutputStream& stream, const Ptr
 
 const Ptr<Chunk> SimpleVoipPacketSerializer::deserialize(MemoryInputStream& stream) const
 {
+    B startPos = B(stream.getPosition());
 	auto simpleVoipPacket = makeShared<SimpleVoipPacket>();
 	uint16_t totalLengthField = stream.readUint16Be();
 	simpleVoipPacket->setTotalLengthField(totalLengthField);
@@ -49,7 +50,7 @@ const Ptr<Chunk> SimpleVoipPacketSerializer::deserialize(MemoryInputStream& stre
 	simpleVoipPacket->setPacketID(stream.readUint32Be());
 	simpleVoipPacket->setVoipTimestamp(SimTime(stream.readUint64Be(), SIMTIME_MS));
 	simpleVoipPacket->setVoiceDuration(SimTime(stream.readUint64Be(), SIMTIME_MS));
-	while (B(stream.getRemainingLength()) > B(0))
+	while (B(stream.getPosition() - startPos).get() < simpleVoipPacket->getTotalLengthField())
 	    stream.readByte();
 	return simpleVoipPacket;
 }
