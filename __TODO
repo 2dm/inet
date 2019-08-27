@@ -1,3 +1,4 @@
+ - review all check* branches in INET
  - review all names in packet queueing and mathematical function API
  - topic/packetapi
  - revive unit tests

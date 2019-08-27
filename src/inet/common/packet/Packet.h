@@ -184,6 +184,7 @@ class INET_API Packet : public cPacket
     const Ptr<const T> peekAtFront(b length = b(-1), int flags = 0) const {
         auto dataLength = getDataLength();
         CHUNK_CHECK_USAGE(b(-1) <= length && length <= dataLength, "length is invalid");
+        // TODO: this is suboptimal, and we have to find another solution
         if (backIterator.getPosition() == b(0) || (length != b(-1) && length <= dataLength)) {
             const auto& chunk = content->peek<T>(frontIterator, length, flags);
             return chunk;
@@ -267,7 +268,7 @@ class INET_API Packet : public cPacket
         auto dataLength = getDataLength();
         CHUNK_CHECK_USAGE(b(0) <= length && length <= dataLength, "length is invalid");
         const auto& chunk = content->peek<T>(backIterator, length, flags);
-        //TODO revise it: check length vs dataLength, doesn't read popped data!
+        // TODO: this must work similarly to peekAtFrontS
         if (chunk == nullptr || chunk->getChunkLength() <= dataLength)
             return chunk;
         else
