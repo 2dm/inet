@@ -58,7 +58,7 @@ void Ieee80211PhyHeaderSerializer::serialize(MemoryOutputStream& stream, const P
 
 const Ptr<Chunk> Ieee80211PhyHeaderSerializer::deserialize(MemoryInputStream& stream) const
 {
-    if (B(stream.getRemainingLength()) == B(4)) {
+    if (true) {
         // TODO: KLUDGE (could be Ieee80211FhssPhyHeader as well)
         auto dsssPhyHeader = makeShared<Ieee80211DsssPhyHeader>();
         dsssPhyHeader->setSignal(stream.readByte());
