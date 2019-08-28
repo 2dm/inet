@@ -226,15 +226,34 @@ Briefly about the syntax:
 For more on the syntax, see :ned:`DimensionalTransmitterBase.ned`.
 
   - when there is interference, the snir is important for calculating reception
-  - we set the SNIR mode to mean, because it might lead to a more realistic interference calculation (if we calculated with the min snir, a short spike might run a transmission)
+  - we set the SNIR mode to mean, because it might lead to a more realistic interference calculation (if we calculated with the min snir, a short spike might ruin a reception)
   - this is set in the receiver. and also, in the error model
   - is that correct like that ?
+
+  - in the receiver, the snirThresholdMode sets how to calculate a snir threshold;
+    frames under that are not even attempted to receive
+  - in the error model, the snirMode sets how to calculate the snir for reception
+    (when the receiver already attempted to receive it)
 
   - they overlap in frequency, but its not substantial from the perspective of the wifi
   - they overlap in time, but its not substantial from the perspective of the wpan
 
   - so there are small overlaps, we need to set the snir more to mean
   - so it is more realistic...a small overlap doesnt ruin the reception
+
+Also we set the :par:`snirThresholdMode` parameter in the receiver, and the :par:`snirMode` parameter in the error model to ``mean``:
+
+.. literalinclude:: ../omnetpp.ini
+   :start-at: snirMode
+   :end-at: snirThresholdMode
+   :language: ini
+
+In the receiver, the :par:`snirThresholdMode` sets how the snir threshold is calculated;
+it's either ``mean`` or ``min`` **TODO explain**. Reception of frames under the threshold is not attempted (they're discarded).
+
+In the error model, the :par:`snirMode` parameter sets how the SNIR for reception is computed when the receiver attempts to receive a frame (also either ``min`` or ``mean``).
+
+**TODO explain**
 
 .. **TODO**
 
@@ -403,6 +422,11 @@ It looks like the following when the simulation is run:
   The hosts using the two wireless technologies detect each others' transmissions (but cannot receive them),
   and this causes them to defer from transmitting. Sometimes they transmit at the same time, and the
   transmissions can interfere and corrupt one another.
+
+  - they can detect each others transmissions and defer
+  - sometimes they transmit at the same time, but they dont ruin each others tx's
+  - because...the overlap in time and frequency is not that great
+  - what happens
 
   The Wifi hosts have the MAC contention state, and the WPAN hosts have the MAC state
   displayed above them, using :ned:`InfoVisualizer`. At first, ``wifiHost1``
