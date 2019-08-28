@@ -32,6 +32,7 @@ void AckingMacHeaderSerializer::serialize(MemoryOutputStream& stream, const Ptr<
 {
     auto startPosition = stream.getLength();
     auto macHeader = staticPtrCast<const AckingMacHeader>(chunk);
+    stream.writeByte(B(macHeader->getChunkLength()).get());
     stream.writeMacAddress(macHeader->getSrc());
     stream.writeMacAddress(macHeader->getDest());
     stream.writeUint16Be(macHeader->getNetworkProtocol());
@@ -44,12 +45,15 @@ void AckingMacHeaderSerializer::serialize(MemoryOutputStream& stream, const Ptr<
 
 const Ptr<Chunk> AckingMacHeaderSerializer::deserialize(MemoryInputStream& stream) const
 {
+    B startPos = stream.getPosition();
     auto macHeader = makeShared<AckingMacHeader>();
+    uint8_t length = stream.readByte();
+    macHeader->setChunkLength(B(length));
     macHeader->setSrc(stream.readMacAddress());
     macHeader->setDest(stream.readMacAddress());
     macHeader->setNetworkProtocol(stream.readUint16Be());
     macHeader->setSrcModuleId(stream.readUint64Be());
-    B remainders = stream.getRemainingLength();
+    B remainders = B(length) - (stream.getPosition() - startPos);
     ASSERT(remainders >= B(0));
     stream.readByteRepeatedly('?', B(remainders).get());
     return macHeader;
