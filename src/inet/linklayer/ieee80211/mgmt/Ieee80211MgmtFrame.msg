@@ -132,8 +132,6 @@ struct Ieee80211SupportedRatesElement
 //
 class Ieee80211MgmtFrame extends FieldsChunk
 {
-    //format: | subtype (4 bits) | type (2 bits) | protocol version (2 bits) |
-    uint8_t type;
 }
 
 //
@@ -148,7 +146,6 @@ class Ieee80211MgmtFrame extends FieldsChunk
 //
 class Ieee80211AuthenticationFrame extends Ieee80211MgmtFrame
 {
-    type = 0xB0;
     chunkLength = B(8);
     //chunkLength = B(6); // add 2+len bytes for challenge text if present
     unsigned short sequenceNumber;
@@ -161,7 +158,6 @@ class Ieee80211AuthenticationFrame extends Ieee80211MgmtFrame
 //
 class Ieee80211DeauthenticationFrame extends Ieee80211MgmtFrame
 {
-    type = 0xC0;
     chunkLength = B(3);
     //chunkLength = B(2);
     Ieee80211ReasonCode reasonCode;
@@ -172,7 +168,6 @@ class Ieee80211DeauthenticationFrame extends Ieee80211MgmtFrame
 //
 class Ieee80211DisassociationFrame extends Ieee80211MgmtFrame
 {
-    type = 0xA0;
     chunkLength = B(3);
     //chunkLength = B(2);
     Ieee80211ReasonCode reasonCode;
@@ -183,7 +178,6 @@ class Ieee80211DisassociationFrame extends Ieee80211MgmtFrame
 //
 class Ieee80211ProbeRequestFrame extends Ieee80211MgmtFrame
 {
-    type = 0x40;
     string SSID;
     Ieee80211SupportedRatesElement supportedRates;
 }
@@ -193,7 +187,6 @@ class Ieee80211ProbeRequestFrame extends Ieee80211MgmtFrame
 //
 class Ieee80211AssociationRequestFrame extends Ieee80211MgmtFrame
 {
-    type = 0x00;
     string SSID;
     Ieee80211SupportedRatesElement supportedRates;
 }
@@ -203,7 +196,6 @@ class Ieee80211AssociationRequestFrame extends Ieee80211MgmtFrame
 //
 class Ieee80211ReassociationRequestFrame extends Ieee80211AssociationRequestFrame
 {
-    type = 0x20;
     MacAddress currentAP;
 }
 
@@ -212,7 +204,6 @@ class Ieee80211ReassociationRequestFrame extends Ieee80211AssociationRequestFram
 //
 class Ieee80211AssociationResponseFrame extends Ieee80211MgmtFrame
 {
-    type = 0x10;
     Ieee80211StatusCode statusCode;
     short aid;
     Ieee80211SupportedRatesElement supportedRates;
@@ -223,7 +214,6 @@ class Ieee80211AssociationResponseFrame extends Ieee80211MgmtFrame
 //
 class Ieee80211ReassociationResponseFrame extends Ieee80211AssociationResponseFrame
 {
-    type = 0x30;
 }
 
 //
@@ -231,7 +221,6 @@ class Ieee80211ReassociationResponseFrame extends Ieee80211AssociationResponseFr
 //
 class Ieee80211BeaconFrame extends Ieee80211MgmtFrame
 {
-    type = 0x80;
     string SSID;
     Ieee80211SupportedRatesElement supportedRates;
     simtime_t beaconInterval;
@@ -244,5 +233,4 @@ class Ieee80211BeaconFrame extends Ieee80211MgmtFrame
 //
 class Ieee80211ProbeResponseFrame extends Ieee80211BeaconFrame
 {
-    type = 0x50;
 }
