@@ -25,6 +25,7 @@ void Ieee802154MacHeaderSerializer::serialize(MemoryOutputStream& stream, const 
 {
     B startPos = B(stream.getLength());
     const auto& macHeader = staticPtrCast<const Ieee802154MacHeader>(chunk);
+    stream.writeByte(B(macHeader->getChunkLength()).get());
     stream.writeByte(macHeader->getSequenceId());
     stream.writeMacAddress(macHeader->getSrcAddr());
     stream.writeMacAddress(macHeader->getDestAddr());
@@ -37,13 +38,15 @@ void Ieee802154MacHeaderSerializer::serialize(MemoryOutputStream& stream, const 
 
 const Ptr<Chunk> Ieee802154MacHeaderSerializer::deserialize(MemoryInputStream& stream) const
 {
+    B startPos = stream.getPosition();
     auto macHeader = makeShared<Ieee802154MacHeader>();
-    macHeader->setChunkLength(stream.getRemainingLength());
+    uint8_t length = stream.readByte();
+    macHeader->setChunkLength(B(length));
     macHeader->setSequenceId(stream.readByte());
     macHeader->setSrcAddr(stream.readMacAddress());
     macHeader->setDestAddr(stream.readMacAddress());
     macHeader->setNetworkProtocol(stream.readUint16Be());
-    while (stream.getRemainingLength() > B(0))
+    while (B(length) - (stream.getPosition() - startPos) > B(0))
         stream.readByte();
     return macHeader;
 }
