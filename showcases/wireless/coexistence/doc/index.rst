@@ -72,6 +72,8 @@ In INET, a radio signal, as a physical phenomenon, is represented by the analog 
 As the signal center frequencies and bandwidths of the 802.11 and 802.15.4 models are not identical,
 the dimensional analog model needs to be used, instead of the scalar analog model. The scalar analog model represents signals with a scalar signal power, and a constant center frequency and bandwidth. The scalar model can only handle situations when the spectrums of two concurrent signals are identical or don't overlap at all. When using the dimensional analog model, signal power can change in both time and frequency. This model is also able to calculate the interference of signals whose spectrums partially overlap.
 
+**TODO with the dimensional, more realistic signal shapes can be defined (the scalar uses a boxcar thing)**
+
 .. #whats a radio medium module?
 
 In order for the signals of Wifi and WPAN to interfere,
@@ -241,17 +243,27 @@ For more on the syntax, see :ned:`DimensionalTransmitterBase.ned`.
   - so there are small overlaps, we need to set the snir more to mean
   - so it is more realistic...a small overlap doesnt ruin the reception
 
-Also we set the :par:`snirThresholdMode` parameter in the receiver, and the :par:`snirMode` parameter in the error model to ``mean``:
+Also we set the :par:`snirThresholdMode` parameter in the radio's receiver module, and the :par:`snirMode` parameter in the error model to ``mean``:
 
 .. literalinclude:: ../omnetpp.ini
-   :start-at: snirMode
-   :end-at: snirThresholdMode
+   :start-at: snirThresholdMode
+   :end-at: snirMode
    :language: ini
 
-In the receiver, the :par:`snirThresholdMode` sets how the snir threshold is calculated;
-it's either ``mean`` or ``min`` **TODO explain**. Reception of frames under the threshold is not attempted (they're discarded).
+In the receiver module, reception of frames under the SNIR threshold is not attempted (they're discarded).
+The :par:`snirThresholdMode` specifies how the SNIR threshold is calculated.
+The parameter's value is either ``mean`` or ``min``, i.e. either take the minimum or the mean of the SNIR for the duration of the reception.
 
-In the error model, the :par:`snirMode` parameter sets how the SNIR for reception is computed when the receiver attempts to receive a frame (also either ``min`` or ``mean``).
+**TODO when there are interfering frames, the snir is important for calculating reception**
+
+In the error model, the :par:`snirMode` parameter specifies how the SNIR for reception is computed when the receiver attempts to receive a frame; also either ``min`` or ``mean``. When taking the minimum of the SNIR during the reception, a short spike in the interfering signal might ruin the reception, as it can decrease the SNIR substantially. Inversely, when two signals overlap substantially but not entirely (in either time or frequency), the mean SNIR might not be low enough to ruin the reception (when in this case it would be more realistic if it did).
+
+.. **TODO why did we choose mean?**
+
+We set the :par:`snirMode` to mean because concurrent Wifi and WPAN signals don't overlap significantly in the time-frequency space. That is, the WPAN frame's spectrum is much smaller than the Wifi's; similarly, the Wifi frame is much shorter than the WPAN.
+
+  - they overlap in frequency, but its not substantial from the perspective of the wifi
+  - they overlap in time, but its not substantial from the perspective of the wpan
 
 **TODO explain**
 
@@ -417,6 +429,26 @@ It looks like the following when the simulation is run:
 .. video:: media/coexistence1.mp4
    :width: 90%
    :align: center
+
+.. video:: media/coexistence7.mp4
+   :width: 90%
+   :align: center
+
+   1248-1420, 14.85, 0.3x
+
+.. .. video:: media/coexistence2.mp4
+      :width: 90%
+      :align: center
+
+      1248-1420, speed 0.3, zoom 17.92
+
+   .. video:: media/coexistence4.mp4
+      :width: 90%
+      :align: center
+
+   .. video:: media/coexistence6.mp4
+      :width: 90%
+      :align: center
 
 **TODO**
   The hosts using the two wireless technologies detect each others' transmissions (but cannot receive them),
