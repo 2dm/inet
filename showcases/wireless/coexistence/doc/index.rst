@@ -70,9 +70,11 @@ For the WPAN, we'll use INET's 802.15.4 narrowband version, in which transmissio
 
 In INET, a radio signal, as a physical phenomenon, is represented by the analog model while it is being transmitted, propagated, and received.
 As the signal center frequencies and bandwidths of the 802.11 and 802.15.4 models are not identical,
-the dimensional analog model needs to be used, instead of the scalar analog model. The scalar analog model represents signals with a scalar signal power, and a constant center frequency and bandwidth. The scalar model can only handle situations when the spectrums of two concurrent signals are identical or don't overlap at all. When using the dimensional analog model, signal power can change in both time and frequency. This model is also able to calculate the interference of signals whose spectrums partially overlap.
+the dimensional analog model needs to be used, instead of the scalar analog model. The scalar analog model represents signals with a scalar signal power, and a constant center frequency and bandwidth. The scalar model can only handle situations when the spectrums of two concurrent signals are identical or don't overlap at all. When using the dimensional analog model, signal power can change in both time and frequency; more realistic signal shapes can be specified. This model is also able to calculate the interference of signals whose spectrums partially overlap.
 
-**TODO with the dimensional, more realistic signal shapes can be defined (the scalar uses a boxcar thing)**
+.. Also, more realistic signal shapes can be specified using the dimensional model, both in time and frequency (as opposed to the flat signal shape used in)
+
+.. **TODO with the dimensional, more realistic signal shapes can be defined (the scalar uses a boxcar thing)**
 
 .. #whats a radio medium module?
 
@@ -83,7 +85,7 @@ The radio medium module keeps track of transmitters, receivers, transmissions an
 
 .. **TODO: this seems unfinished**
 
-The standard radio medium module in INET is :ned:`RadioMedium`. Wireless protocols in INET (such as 802.11 or 802.15.4) often have their own radio module types (e.g. :ned:`Ieee80211DimensionalRadioMedium`), but these modules are actually :ned:`RadioMedium`, just with different default parameterizations (each parameterized for its typical use case).
+The standard radio medium module in INET is :ned:`RadioMedium`. Wireless protocols in INET (such as 802.11 or 802.15.4) often have their own radio medium module types (e.g. :ned:`Ieee80211DimensionalRadioMedium`), but these modules are actually :ned:`RadioMedium`, just with different default parameterizations (each parameterized for its typical use case).
 For example, they might have different defaults for path loss type, background noise power, or analog signal representation type.
 However, setting these radio medium parameters are not required for the simulation to work. Most of the time, one could just use RadioMedium with its default parameters (with the exception of setting the analog signal representation type to dimensional when simulating CTI).
 
@@ -219,11 +221,11 @@ Here is the ``frequencyGains`` parameter value specifying this spectrum:
 
 Briefly about the syntax:
 
-- The parameter uses frequency and gain pairs to define points on the frequency/gain graph. Between these points, the interpolation mode can be specified.
+- The parameter uses frequency and gain pairs to define points on the frequency/gain graph. Between these points, the interpolation mode can be specified, e.g. ``left`` (take value of the left point), ``greater`` (take the greater of the two points), ``linear``, etc. **TODO**.
 - The ``-inf Hz/-inf dB`` and the ``+inf Hz/+inf dB`` points are implicit (hence the ``frequencyGains`` string starts with an interpolation mode).
 - ``c`` is the center frequency and ``b`` is the bandwidth. These values are properties of the transmission, i.e. the receiver listens on the center frequency and bandwidth. However, the signal can have radio energy outside of this range, which can cause interference.
 
-**TODO**
+.. **TODO**
 
 For more on the syntax, see :ned:`DimensionalTransmitterBase.ned`.
 
@@ -252,15 +254,17 @@ Also we set the :par:`snirThresholdMode` parameter in the radio's receiver modul
 
 In the receiver module, reception of frames under the SNIR threshold is not attempted (they're discarded).
 The :par:`snirThresholdMode` specifies how the SNIR threshold is calculated.
-The parameter's value is either ``mean`` or ``min``, i.e. either take the minimum or the mean of the SNIR for the duration of the reception.
+The parameter's value is either ``mean`` or ``min``, i.e. either take the `minimum` or the `mean` of the SNIR during the reception.
 
 **TODO when there are interfering frames, the snir is important for calculating reception**
 
-In the error model, the :par:`snirMode` parameter specifies how the SNIR for reception is computed when the receiver attempts to receive a frame; also either ``min`` or ``mean``. When taking the minimum of the SNIR during the reception, a short spike in the interfering signal might ruin the reception, as it can decrease the SNIR substantially. Inversely, when two signals overlap substantially but not entirely (in either time or frequency), the mean SNIR might not be low enough to ruin the reception (when in this case it would be more realistic if it did).
+**actually, its always important**
+
+In the error model, the :par:`snirMode` parameter specifies how the SNIR is computed when the receiver attempts to receive a frame; also either ``min`` or ``mean``. When taking the minimum of the SNIR during the reception, a short spike in the interfering signal might ruin the reception, as it can decrease the SNIR substantially. Inversely, when two signals overlap substantially but not entirely (in either time or frequency), the mean SNIR might not be low enough to ruin the reception (when in this case it would be more realistic if it did).
 
 .. **TODO why did we choose mean?**
 
-We set the :par:`snirMode` to mean because concurrent Wifi and WPAN signals don't overlap significantly in the time-frequency space. That is, the WPAN frame's spectrum is much smaller than the Wifi's; similarly, the Wifi frame is much shorter than the WPAN.
+We set the :par:`snirMode` to ``mean`` because concurrent Wifi and WPAN signals don't overlap significantly in the time-frequency space. That is, the WPAN frame's spectrum is much smaller than the Wifi's; similarly, the Wifi frame is much shorter than the WPAN.
 
   - they overlap in frequency, but its not substantial from the perspective of the wifi
   - they overlap in time, but its not substantial from the perspective of the wpan
@@ -345,7 +349,7 @@ In all configurations, the simulations are run for five seconds and repeated eig
    we'll see if it can do that while the wifi is constantly transmitting, and if the wifi can keep transmitting...
    we suspect that they both will be able to do their thing because of the cooperative coexistence
 
-**TODO the Wifi saturates the channel -> is that needed?**
+.. **TODO the Wifi saturates the channel -> is that needed?**
 
 Results
 -------
@@ -402,7 +406,7 @@ Results
 
 There is contention between the Wifi and WPAN hosts so that it is expected that they will be able to coexist cooperatively. However, protection mechanisms don't work between the two technologies, so it is likely that they'll transmit into each other's transmissions, and the performance of both will be degraded. The Wifi host waits less than the WPAN host before accessing the channel, so it is expected that the Wifi host will gain channel access most of the time. The Wifi might even starve the WPAN.
 
-WPAN transmissions are significantly longer than Wifi transmissions, thus, when the WPAN host does gain channel access, it'll take lots of air time from the Wifi host during the transmission of a single 802.15.4 frame. However, the WPAN host sends frames much less frequently than the Wifi host, so it can afford to wait for channel access, so that its performance might be mostly unaffected. Also, the Wifi host's transmission power is significantly greater than the WPAN host's, so that when the two transmit concurrently, the Wifi transmission might be correctly receivable, but the WPAN transmission might be corrupted.
+WPAN transmissions are significantly longer than Wifi transmissions, thus, when the WPAN host does gain channel access, it'll take lots of air time from the Wifi host during the transmission of a single 802.15.4 frame. However, the WPAN host sends frames much less frequently than the Wifi host, so it can afford to wait for channel access; its performance might be mostly unaffected. Also, the Wifi host's transmission power is significantly greater than the WPAN host's, so that when the two transmit concurrently, the Wifi transmission might be correctly receivable but the WPAN transmission might be corrupted.
 
 .. Why will performance be degraded?
 
@@ -426,15 +430,27 @@ It looks like the following when the simulation is run:
 
 .. TODO when running the coexistence configuration it looks like the following...
 
-.. video:: media/coexistence1.mp4
-   :width: 90%
-   :align: center
+.. .. video:: media/coexistence1.mp4
+      :width: 90%
+      :align: center
 
-.. video:: media/coexistence7.mp4
-   :width: 90%
-   :align: center
+.. .. video:: media/coexistence7.mp4
+      :width: 90%
+      :align: center
+
+      1248-1420, 14.85, 0.3x
+
+.. .. video:: media/coexistence8.mp4
+      :width: 100%
+      :align: center
 
    1248-1420, 14.85, 0.3x
+
+.. video:: media/coexistence9.mp4
+   :width: 100%
+   :align: center
+
+.. 1248-1420, 14.85, 0.3x
 
 .. .. video:: media/coexistence2.mp4
       :width: 90%
@@ -450,34 +466,46 @@ It looks like the following when the simulation is run:
       :width: 90%
       :align: center
 
-**TODO**
-  The hosts using the two wireless technologies detect each others' transmissions (but cannot receive them),
-  and this causes them to defer from transmitting. Sometimes they transmit at the same time, and the
-  transmissions can interfere and corrupt one another.
+The Wifi hosts have the MAC contention state, and the WPAN hosts have the MAC state
+displayed above them, using :ned:`InfoVisualizer`. The spectrum and power of received signals is visualized with a spectrum figure (par of :ned:`MediumVisualizer`) at all hosts. The spectrum figure displays the sum of all signals present at the receiving node. Signals not being received are indicated with blue. When receiving a signal, the received signal is indicated with green; the sum of interfering signals are indicated with red. Note that the spectrum figure configures its scale automatically based on the signals displayed; also, all spectrum figures use the same scale so that the signal spectrums and power levels can be compared.
 
-  - they can detect each others transmissions and defer
-  - sometimes they transmit at the same time, but they dont ruin each others tx's
-  - because...the overlap in time and frequency is not that great
-  - what happens
+The Wifi and WPAN hosts detect each others' transmissions (but cannot receive them),
+and this causes them to defer from transmitting. Sometimes they transmit at the same time, and the
+transmissions interfere. However, the interference doesn't ruin the receptions.
 
-  The Wifi hosts have the MAC contention state, and the WPAN hosts have the MAC state
-  displayed above them, using :ned:`InfoVisualizer`. At first, ``wifiHost1``
-  starts transmitting, sending UDP packets. (Note that the MAC contention state is IDLE while
-  the host is transmitting, as the MAC is not deferring or backing off.) ``wpanHost1`` wants to transmit,
-  so it waits in a backoff state. When the Wifi host transmits its third packet,
-  the WPAN host switches to Clear channel assessment (CCA) mode. It perceives
-  the channel as free, so it starts transmitting. ``wifiHost1`` senses the
-  transmission and defers from transmitting itself. ``wpanHost2`` receives
-  the packet correctly (indicated by both physical and data link layer activity arrows showing)
-  and sends an ACK, but ``wifiHost2`` starts transmitting concurrently with
-  the ACK, resulting in interfering transmissions. ``wifiHost2`` receives its
-  transmission correctly, but ``wpanHost2`` doesn't (the incorrectly received
-  packet is dropped, indicated by the packet drop animation). Eventually,
-  ``wpanHost1`` transmits the packet again (``wifiHost1`` defers),
-  and ``wpanHost2`` receives the transmission correctly. There is no
-  data link activity arrow because ``wpanHost2`` already received that packet,
-  it just didn't ACK it successfully yet. Thus, it sends an ACK, which is successfully
-  received this time.
+.. - they can detect each others transmissions and defer
+   - sometimes they transmit at the same time, but they dont ruin each others tx's
+   - because...the overlap in time and frequency is not that great
+   - spectrum visualization
+   - what happens
+
+The reason is that the overlap in the time-frequency space is not large. The two transmissions overlap in frequency, but it is not substantial from the perspective of the Wifi (the WPAN transmission's spectrum is small compared to the Wifi's). Similarly, the transmissions overlap in time, but the overlap is not substantial from the perspective of the WPAN (the Wifi transmission's duration is small compared to the WPAN's). (Despite the low time-frequency space overlap, if the signal power for one of the transmissions were significantly higher than the other, the lower power transmission might not be correctly receivable.)
+
+.. - they overlap in frequency, but its not substantial from the perspective of the wifi
+   - they overlap in time, but its not substantial from the perspective of the wpan
+
+.. At first, ``wifiHost1``
+   starts transmitting a frame. (Note that the MAC contention state is IDLE while
+   the host is transmitting, as the MAC is not deferring or backing off.) ``wpanHost1`` is in Clear channel assessment (CCA) mode. It perceives
+   the channel as free, so it starts transmitting concurrently with ``wifiHost1``. ``wpanHost2`` receives
+   the packet correctly (indicated by both physical and data link layer activity arrows showing)
+   and sends an ACK, but ``wifiHost2`` starts transmitting concurrently with
+   the ACK, resulting in interfering transmissions. ``wifiHost2`` receives its
+   transmission correctly, but ``wpanHost2`` doesn't (the incorrectly received
+   packet is dropped, indicated by the packet drop animation). Eventually,
+   ``wpanHost1`` transmits the packet again (``wifiHost1`` defers),
+   and ``wpanHost2`` receives the transmission correctly. There is no
+   data link activity arrow because ``wpanHost2`` already received that packet,
+   it just didn't ACK it successfully yet. Thus, it sends an ACK, which is successfully
+   received this time.
+
+   At first, ``wifiHost1`` starts transmitting a frame. At the same time, ``wpanHost1`` is in CCA mode. It detects that the channel is free, and starts transmitting (concurrently with ``wifiHost1``). The Wifi transmission is correctly received and ACKED by ``wifiHost2``, despite the interfering WPAN transmission. ``wifiHost1`` would send its next packet, but it senses the ongoing WPAN transmission. It defers from transmitting until the WPAN transmission is over. ``wpanHost1`` receives the frame correctly. Then, ``wifiHost1`` transmits its next frame; at the same time, ``wpanHost2`` transmits the ACK (note that there is no CCA before the ACK). **there is also a wifi ack...all are correctly received. the performance degradation comes from the nodes waiting for each other. actually, the wifi waits a lot for the wpan finish transmitting. the wpan waits a lot for the wifi to get the channel but it doesnt matter to the wpan because it doesnt have frames to send frequently**
+
+In the video, ``wifiHost1`` and ``wpanHost1`` transmit concurrently. The Wifi transmission is correctly received and successfuly ACKED. Then, ``wifiHost2`` senses the ongoing WPAN transmission, and defers from transmitting. The WPAN tranmission is correctly received by ``wpanHost2``. When the transmission is over, ``wifiHost1`` sends its next frame; since ACKs are not protected by CCA, ``wpanHost2`` sends the ACK concurrently with the Wifi frame (and also the Wifi ACK). All frames are correctly received; ``wifiHost1`` waited for the remainder of the WPAN transmission, during which it could have sent multiple frames.
+
+.. **TODO**
+
+.. The Wifi transmission is correctly received and ACKED by ``wifiHost2``, despite the interfering WPAN transmission.
 
 .. **TODO is this still correct?**
 
@@ -512,11 +540,17 @@ Here are the performance results:
    :width: 70%
    :align: center
 
-**TODO**
-  In this particular scenario, the performance of both technologies is decreased,
-  by about 10 percent, compared to the base performance.
-  Note that the fractional number of packets is due to
-  the averaging of the repetitions.
+.. In this particular scenario, the performance of both technologies is decreased,
+   by about 10 percent, compared to the base performance.
+   Note that the fractional number of packets is due to
+   the averaging of the repetitions.
+
+In this particular scenario, the performance of Wifi is decreased,
+by about 5 percent, compared to the base performance. The performance of WPAN didn't decrease, because it had packets to send infrequently; it could send them all despite the Wifi traffic.
+Note that the fractional number of packets is due to
+the averaging of the repetitions.
+
+**TODO is it explained that the wifi decreases because it has to wait for the WPAN?**
 
 .. .. note::
 
