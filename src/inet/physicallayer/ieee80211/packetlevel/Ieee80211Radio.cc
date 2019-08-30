@@ -151,7 +151,7 @@ void Ieee80211Radio::encapsulate(Packet *packet) const
 void Ieee80211Radio::decapsulate(Packet *packet) const
 {
     auto mode = packet->getTag<Ieee80211ModeInd>()->getMode();
-    const auto& phyHeader = packet->popAtFront<Ieee80211PhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    const auto& phyHeader = popIeee80211PhyHeader(packet, mode);
     if (phyHeader->isIncorrect())
         packet->setBitError(true);
     auto tailLength = dynamic_cast<const Ieee80211OfdmMode *>(mode) ? b(6) : b(0);
@@ -159,6 +159,39 @@ void Ieee80211Radio::decapsulate(Packet *packet) const
     if (tailLength + paddingLength != b(0))
         packet->popAtBack(tailLength + paddingLength, Chunk::PF_ALLOW_INCORRECT);
     packet->getTag<PacketProtocolTag>()->setProtocol(&Protocol::ieee80211Mac);
+}
+
+const Ptr<const Ieee80211PhyHeader> Ieee80211Radio::popIeee80211PhyHeader(Packet *packet, const IIeee80211Mode *mode)
+{
+    if (dynamic_cast<const Ieee80211DsssMode*>(mode)) {
+        return packet->popAtFront<Ieee80211DsssPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const Ieee80211DsssOfdmMode*>(mode)) {
+        return packet->popAtFront<Ieee80211DsssPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const Ieee80211ErpOfdmMode*>(mode)) {
+        return packet->popAtFront<Ieee80211ErpOfdmPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const Ieee80211FhssMode*>(mode)) {
+        return packet->popAtFront<Ieee80211FhssPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const Ieee80211HrDsssMode*>(mode)) {
+        return packet->popAtFront<Ieee80211HrDsssPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const Ieee80211HtMode*>(mode)) {
+        return packet->popAtFront<Ieee80211HtPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const Ieee80211IrMode*>(mode)) {
+        return packet->popAtFront<Ieee80211IrPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const Ieee80211OfdmMode*>(mode)) {
+        return packet->popAtFront<Ieee80211OfdmPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const Ieee80211VhtMode*>(mode)) {
+        return packet->popAtFront<Ieee80211VhtPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else
+        throw cRuntimeError("Invalid IEEE 802.11 PHY mode.");
 }
 
 } // namespace physicallayer

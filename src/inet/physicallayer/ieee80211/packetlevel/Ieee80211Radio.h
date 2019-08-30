@@ -25,6 +25,16 @@
 #include "inet/physicallayer/ieee80211/mode/IIeee80211Mode.h"
 #include "inet/physicallayer/ieee80211/packetlevel/Ieee80211ReceiverBase.h"
 #include "inet/physicallayer/ieee80211/packetlevel/Ieee80211TransmitterBase.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211DsssMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211DsssOfdmMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211ErpOfdmMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211FhssMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211HrDsssMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211HtMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211IrMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211OfdmMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211VhtMode.h"
+#include "inet/physicallayer/ieee80211/packetlevel/Ieee80211Tag_m.h"
 
 namespace inet {
 namespace physicallayer {
@@ -37,6 +47,7 @@ class INET_API Ieee80211Radio : public FlatRadioBase
      * The signal value is the new radio channel.
      */
     static simsignal_t radioChannelChangedSignal;
+    static const Ptr<const Ieee80211PhyHeader> popIeee80211PhyHeader(Packet *packet, const IIeee80211Mode *mode);
 
   protected:
     virtual void initialize(int stage) override;
