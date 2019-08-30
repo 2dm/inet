@@ -205,7 +205,16 @@ void TcpConnection::printSegmentBrief(Packet *packet, const Ptr<const TcpHeader>
 
 TcpConnection *TcpConnection::cloneListeningConnection()
 {
-    TcpConnection *conn = new TcpConnection(tcpMain, socketId);
+//    TcpConnection *conn = new TcpConnection();
+//    conn->initConnection(tcpMain, socketId);
+    auto moduleType = cModuleType::get("inet.transportlayer.tcp.TcpConnection");
+    char submoduleName[24];
+    sprintf(submoduleName, "conn-%d", socketId);
+    auto conn = check_and_cast<TcpConnection *>(moduleType->create(submoduleName, tcpMain));
+    conn->finalizeParameters();
+    conn->buildInside();
+    conn->initConnection(tcpMain, socketId);
+    conn->callInitialize();
 
     // following code to be kept consistent with initConnection()
     const char *sendQueueClass = sendQueue->getClassName();

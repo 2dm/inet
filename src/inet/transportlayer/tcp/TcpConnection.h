@@ -579,13 +579,17 @@ class INET_API TcpConnection : public cSimpleModule
     virtual void updateWndInfo(const Ptr<const TcpHeader>& tcpseg, bool doAlways = false);
 
   public:
+    TcpConnection() {}
+    TcpConnection(const TcpConnection& other) {}    //FIXME kludge
+    void initialize() {}
+
     /**
      * The "normal" constructor.
      */
-    TcpConnection(Tcp *mod, int socketId);
+    void initConnection(Tcp *mod, int socketId);
 
     /**
-     * Note: this default ctor is NOT used to create live connections, only
+     * Note: this ctor is NOT used to create live connections, only
      * temporary ones so that TCPMain can invoke their segmentArrivalWhileClosed().
      */
     TcpConnection(Tcp *mod);
