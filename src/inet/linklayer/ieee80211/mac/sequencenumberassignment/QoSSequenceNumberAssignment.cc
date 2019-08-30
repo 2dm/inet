@@ -71,9 +71,7 @@ void QoSSequenceNumberAssignment::assignSequenceNumber(const Ptr<Ieee80211DataOr
     }
     else
         ASSERT(false);
-    if (seqNum > 15)
-        seqNum = 0;
-    header->setSequenceNumber(seqNum);
+    header->setSequenceNumber(SequenceNumber(seqNum.getRaw() % 16));
 }
 
 } /* namespace ieee80211 */
