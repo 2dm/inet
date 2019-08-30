@@ -19,6 +19,8 @@
 #include "inet/networklayer/common/L3AddressResolver.h"
 #include "inet/physicallayer/analogmodel/packetlevel/DimensionalTransmission.h"
 #include "inet/visualizer/base/MediumVisualizerBase.h"
+#include "inet/physicallayer/ieee80211/packetlevel/Ieee80211TransmissionBase.h"
+#include "inet/physicallayer/ieee80211/packetlevel/Ieee80211Tag_m.h"
 
 namespace inet {
 
@@ -182,7 +184,11 @@ bool MediumVisualizerBase::matchesTransmission(const ITransmission *transmission
         if (!interfaceFilter.matches(interfaceEntry))
             return false;
     }
-    return packetFilter.matches(transmission->getPacket());
+    const Packet* packet = transmission->getPacket();
+    if (auto transmission_tmp = dynamic_cast<const inet::physicallayer::Ieee80211TransmissionBase*>(transmission)) {
+        const_cast<Packet*>(packet)->addTagIfAbsent<inet::physicallayer::Ieee80211ModeInd>()->setMode(transmission_tmp->getMode());
+    }
+    return packetFilter.matches(packet);
 }
 
 void MediumVisualizerBase::handleSignalAdded(const physicallayer::ITransmission *transmission)
