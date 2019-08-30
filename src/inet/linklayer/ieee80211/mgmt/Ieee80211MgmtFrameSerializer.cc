@@ -47,6 +47,7 @@ void Ieee80211AuthenticationFrameSerializer::serialize(MemoryOutputStream& strea
     stream.writeUint16Be(authenticationFrame->getStatusCode());
     stream.writeByte(authenticationFrame->isLast() ? 1 : 0);
     // 4    Challenge text                              The challenge text information is present only in certain Authentication frames as defined in Table 7-17.
+    stream.writeByte(0);
     // Last Vendor Specific                             One or more vendor-specific information elements may appear in this frame. This information element follows all other information elements.
 }
 
@@ -57,6 +58,7 @@ const Ptr<Chunk> Ieee80211AuthenticationFrameSerializer::deserialize(MemoryInput
     int16_t statusCode = stream.readUint16Be();
     authenticationFrame->setStatusCode(static_cast<Ieee80211StatusCode>(statusCode));
     authenticationFrame->setIsLast(stream.readByte() == 1);
+    stream.readByte();
     return authenticationFrame;
 }
 
@@ -110,7 +112,9 @@ void Ieee80211AssociationRequestFrameSerializer::serialize(MemoryOutputStream& s
 
 const Ptr<Chunk> Ieee80211AssociationRequestFrameSerializer::deserialize(MemoryInputStream& stream) const {
     auto associationRequestFrame = makeShared<Ieee80211AssociationRequestFrame>();
-
+    associationRequestFrame->setChunkLength(stream.getRemainingLength());
+    stream.readUint16Be();
+    stream.readUint16Be();
     char SSID[256];
     stream.readByte();
     unsigned int length = stream.readByte();
@@ -317,7 +321,7 @@ void Ieee80211ProbeResponseFrameSerializer::serialize(MemoryOutputStream& stream
     // 4      SSID
     const char *SSID = probeResponseFrame->getSSID();
     unsigned int length = strlen(SSID);
-    stream.writeByte(0);    //FIXME
+    stream.writeByte(probeResponseFrame->getChannelNumber());    //FIXME
     stream.writeByte(length);
     stream.writeBytes((uint8_t *)SSID, B(length));
     // 5      Supported rates
@@ -361,7 +365,7 @@ const Ptr<Chunk> Ieee80211ProbeResponseFrameSerializer::deserialize(MemoryInputS
     stream.readUint16Be();
 
     char SSID[256];
-    stream.readByte();
+    probeResponseFrame->setChannelNumber(stream.readByte());
     unsigned int length = stream.readByte();
     stream.readBytes((uint8_t *)SSID, B(length));
     SSID[length] = '\0';
