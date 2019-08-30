@@ -44,10 +44,7 @@ void Ieee80211AuthenticationFrameSerializer::serialize(MemoryOutputStream& strea
     // 2    Authentication transaction sequence number
     stream.writeUint16Be(authenticationFrame->getSequenceNumber());
     // 3    Status code                                 The status code information is reserved in certain Authentication frames as defined in Table 7-17.
-    if((int)authenticationFrame->getStatusCode() == -1)
-        stream.writeUint16Be(100);
-    else
-        stream.writeUint16Be(authenticationFrame->getStatusCode());
+    stream.writeUint16Be(authenticationFrame->getStatusCode());
     stream.writeByte(authenticationFrame->isLast() ? 1 : 0);
     // 4    Challenge text                              The challenge text information is present only in certain Authentication frames as defined in Table 7-17.
     // Last Vendor Specific                             One or more vendor-specific information elements may appear in this frame. This information element follows all other information elements.
@@ -57,11 +54,8 @@ const Ptr<Chunk> Ieee80211AuthenticationFrameSerializer::deserialize(MemoryInput
     auto authenticationFrame = makeShared<Ieee80211AuthenticationFrame>();
     stream.readUint16Be();
     authenticationFrame->setSequenceNumber(stream.readUint16Be());
-    uint16_t statusCode = stream.readUint16Be();
-    if(statusCode == 100)
-        authenticationFrame->setStatusCode(static_cast<Ieee80211StatusCode>(-1));
-    else
-        authenticationFrame->setStatusCode(static_cast<Ieee80211StatusCode>(statusCode));
+    int16_t statusCode = stream.readUint16Be();
+    authenticationFrame->setStatusCode(static_cast<Ieee80211StatusCode>(statusCode));
     authenticationFrame->setIsLast(stream.readByte() == 1);
     return authenticationFrame;
 }
@@ -71,19 +65,13 @@ const Ptr<Chunk> Ieee80211AuthenticationFrameSerializer::deserialize(MemoryInput
  */
 void Ieee80211DeauthenticationFrameSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const {
     auto deauthenticationFrame = dynamicPtrCast<const Ieee80211DeauthenticationFrame>(chunk);
-    if((int)deauthenticationFrame->getReasonCode() == -1)
-        stream.writeUint16Be(100);
-    else
-        stream.writeUint16Be(deauthenticationFrame->getReasonCode());
+    stream.writeUint16Be(deauthenticationFrame->getReasonCode());
 }
 
 const Ptr<Chunk> Ieee80211DeauthenticationFrameSerializer::deserialize(MemoryInputStream& stream) const {
     auto dauthenticationFrame = makeShared<Ieee80211DeauthenticationFrame>();
-    uint16_t reasonCode = stream.readUint16Be();
-    if(reasonCode == 100)
-        dauthenticationFrame->setReasonCode(static_cast<Ieee80211ReasonCode>(-1));
-    else
-        dauthenticationFrame->setReasonCode(static_cast<Ieee80211ReasonCode>(reasonCode));
+    int16_t reasonCode = stream.readUint16Be();
+    dauthenticationFrame->setReasonCode(static_cast<Ieee80211ReasonCode>(reasonCode));
     return dauthenticationFrame;
 }
 
@@ -147,10 +135,7 @@ void Ieee80211AssociationResponseFrameSerializer::serialize(MemoryOutputStream& 
     // 1    Capability
     stream.writeUint16Be(0);    //FIXME
     // 2    Status code
-    if((int)associationResponseFrame->getStatusCode() == -1)
-        stream.writeUint16Be(100);
-    else
-        stream.writeUint16Be(associationResponseFrame->getStatusCode());
+    stream.writeUint16Be(associationResponseFrame->getStatusCode());
     // 3    AID
     stream.writeUint16Be(associationResponseFrame->getAid());
     // 4    Supported rates
@@ -171,11 +156,8 @@ void Ieee80211AssociationResponseFrameSerializer::serialize(MemoryOutputStream& 
 const Ptr<Chunk> Ieee80211AssociationResponseFrameSerializer::deserialize(MemoryInputStream& stream) const {
     auto associationResponseFrame = makeShared<Ieee80211AssociationResponseFrame>();
     stream.readUint16Be();
-    uint16_t statusCode = stream.readUint16Be();
-    if(statusCode == 100)
-        associationResponseFrame->setStatusCode(static_cast<Ieee80211StatusCode>(-1));
-    else
-        associationResponseFrame->setStatusCode(static_cast<Ieee80211StatusCode>(statusCode));
+    int16_t statusCode = stream.readUint16Be();
+    associationResponseFrame->setStatusCode(static_cast<Ieee80211StatusCode>(statusCode));
     associationResponseFrame->setAid(stream.readUint16Be());
 
     Ieee80211SupportedRatesElement supRat;
@@ -266,19 +248,13 @@ const Ptr<Chunk> Ieee80211BeaconFrameSerializer::deserialize(MemoryInputStream& 
  */
 void Ieee80211DisassociationFrameSerializer::serialize(MemoryOutputStream& stream, const Ptr<const Chunk>& chunk) const {
     auto disassociationFrame = dynamicPtrCast<const Ieee80211DisassociationFrame>(chunk);
-    if((int)disassociationFrame->getReasonCode() == -1)
-        stream.writeUint16Be(100);
-    else
-        stream.writeUint16Be(disassociationFrame->getReasonCode());
+    stream.writeUint16Be(disassociationFrame->getReasonCode());
 }
 
 const Ptr<Chunk> Ieee80211DisassociationFrameSerializer::deserialize(MemoryInputStream& stream) const {
     auto disassociationFrame = makeShared<Ieee80211DisassociationFrame>();
-    uint16_t reasonCode = stream.readUint16Be();
-    if(reasonCode == 100)
-        disassociationFrame->setReasonCode(static_cast<Ieee80211ReasonCode>(-1));
-    else
-        disassociationFrame->setReasonCode(static_cast<Ieee80211ReasonCode>(reasonCode));
+    int16_t reasonCode = stream.readUint16Be();
+    disassociationFrame->setReasonCode(static_cast<Ieee80211ReasonCode>(reasonCode));
     return disassociationFrame;
 }
 
@@ -469,10 +445,7 @@ void Ieee80211ReassociationResponseFrameSerializer::serialize(MemoryOutputStream
     // 1    Capability
     stream.writeUint16Be(0);    //FIXME
     // 2    Status code
-    if((int)reassociationResponseFrame->getStatusCode() == -1)
-        stream.writeUint16Be(100);
-    else
-        stream.writeUint16Be(reassociationResponseFrame->getStatusCode());
+    stream.writeUint16Be(reassociationResponseFrame->getStatusCode());
     // 3    AID
     stream.writeUint16Be(reassociationResponseFrame->getAid());
     // 4    Supported rates
@@ -493,11 +466,8 @@ void Ieee80211ReassociationResponseFrameSerializer::serialize(MemoryOutputStream
 const Ptr<Chunk> Ieee80211ReassociationResponseFrameSerializer::deserialize(MemoryInputStream& stream) const {
     auto reassociationResponseFrame = makeShared<Ieee80211ReassociationResponseFrame>();
     stream.readUint16Be();
-    uint16_t statusCode = stream.readUint16Be();
-    if(statusCode == 100)
-        reassociationResponseFrame->setStatusCode(static_cast<Ieee80211StatusCode>(-1));
-    else
-        reassociationResponseFrame->setStatusCode(static_cast<Ieee80211StatusCode>(statusCode));
+    int16_t statusCode = stream.readUint16Be();
+    reassociationResponseFrame->setStatusCode(static_cast<Ieee80211StatusCode>(statusCode));
     reassociationResponseFrame->setAid(stream.readUint16Be());
 
     Ieee80211SupportedRatesElement supRat;
