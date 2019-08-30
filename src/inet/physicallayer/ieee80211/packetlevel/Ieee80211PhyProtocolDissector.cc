@@ -35,7 +35,8 @@ void Ieee80211PhyProtocolDissector::dissect(Packet *packet, const Protocol *prot
     callback.startProtocolDataUnit(&Protocol::ieee80211Phy);
     auto originalBackOffset = packet->getBackOffset();
     auto payloadEndOffset = packet->getFrontOffset();
-    const auto& header = packet->popAtFront<inet::physicallayer::Ieee80211PhyHeader>();
+    auto mode = packet->getTag<inet::physicallayer::Ieee80211ModeInd>()->getMode();
+    const auto& header = popIeee80211PhyHeader(packet, mode);
     callback.visitChunk(header, &Protocol::ieee80211Phy);
     payloadEndOffset += header->getChunkLength() + B(header->getLengthField());
     bool incorrect = (payloadEndOffset > originalBackOffset || header->getLengthField() < header->getChunkLength());
@@ -52,6 +53,39 @@ void Ieee80211PhyProtocolDissector::dissect(Packet *packet, const Protocol *prot
         callback.visitChunk(padding, &Protocol::ieee80211Phy);
     }
     callback.endProtocolDataUnit(&Protocol::ieee80211Phy);
+}
+
+const Ptr<const inet::physicallayer::Ieee80211PhyHeader> Ieee80211PhyProtocolDissector::popIeee80211PhyHeader(Packet *packet, const inet::physicallayer::IIeee80211Mode *mode)
+{
+    if (dynamic_cast<const inet::physicallayer::Ieee80211DsssMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211DsssPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const inet::physicallayer::Ieee80211DsssOfdmMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211DsssPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const inet::physicallayer::Ieee80211ErpOfdmMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211ErpOfdmPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const inet::physicallayer::Ieee80211FhssMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211FhssPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const inet::physicallayer::Ieee80211HrDsssMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211HrDsssPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const inet::physicallayer::Ieee80211HtMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211HtPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const inet::physicallayer::Ieee80211IrMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211IrPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const inet::physicallayer::Ieee80211OfdmMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211OfdmPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else if (dynamic_cast<const inet::physicallayer::Ieee80211VhtMode*>(mode)) {
+        return packet->popAtFront<inet::physicallayer::Ieee80211VhtPhyHeader>(b(-1), Chunk::PF_ALLOW_INCORRECT);
+    }
+    else
+        throw cRuntimeError("Invalid IEEE 802.11 PHY mode.");
 }
 
 } // namespace inet
