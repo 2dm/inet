@@ -22,6 +22,16 @@
 #include "inet/physicallayer/ieee80211/mode/IIeee80211Mode.h"
 #include "inet/physicallayer/ieee80211/mode/Ieee80211ModeSet.h"
 #include "inet/physicallayer/ieee80211/packetlevel/Ieee80211TransmitterBase.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211DsssMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211DsssOfdmMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211ErpOfdmMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211FhssMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211HrDsssMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211HtMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211IrMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211OfdmMode.h"
+#include "inet/physicallayer/ieee80211/mode/Ieee80211VhtMode.h"
+#include "inet/physicallayer/ieee80211/packetlevel/Ieee80211Tag_m.h"
 
 namespace inet {
 
@@ -38,6 +48,8 @@ class INET_API Ieee80211DimensionalTransmitter : public Ieee80211TransmitterBase
     virtual std::ostream& printToStream(std::ostream& stream, int level) const override;
 
     virtual const ITransmission *createTransmission(const IRadio *radio, const Packet *packet, simtime_t startTime) const override;
+
+    static const Ptr<const Ieee80211PhyHeader> peekIeee80211PhyHeader(const Packet *packet, const IIeee80211Mode *mode);
 };
 
 } // namespace physicallayer
