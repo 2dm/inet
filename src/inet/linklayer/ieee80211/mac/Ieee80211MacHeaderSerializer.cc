@@ -55,7 +55,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
         stream.writeMacAddress(msduSubframe->getDa());
         stream.writeMacAddress(msduSubframe->getSa());
         stream.writeUint16Be(msduSubframe->getLength());
-        std::cout << "serializing Ieee80211MsduSubframeHeader" << endl;
     }
     else if (auto mpduSubframe = dynamicPtrCast<const Ieee80211MpduSubframeHeader>(chunk))
     {
@@ -64,7 +63,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
         stream.writeUint8(mpduSubframe->getLength() & 0xFF);
         stream.writeByte(0);
         stream.writeByte(0x4E);
-        std::cout << "serializing Ieee80211MpduSubframeHeader" << endl;
     }
     else {
         auto macHeader = dynamicPtrCast<const Ieee80211MacHeader>(chunk);
@@ -100,7 +98,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                 stream.writeMacAddress(mgmtHeader->getAddress3());
                 stream.writeUint4(mgmtHeader->getSequenceNumber().getRaw());
                 stream.writeNBitsOfUint64Be(mgmtHeader->getFragmentNumber(), 12);
-                std::cout << "serializing Ieee80211MgmtHeader" << endl;
                 break;
             }
             case ST_ACTION: {
@@ -134,7 +131,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                             stream.writeUint16Be(addbaRequest->getBlockAckTimeoutValue().inUnit(SIMTIME_US) / 1024);
                             stream.writeUint4(addbaRequest->get_fragmentNumber());
                             stream.writeNBitsOfUint64Be(addbaRequest->getSequenceNumber().getRaw(), 12);
-                            std::cout << "serializing Ieee80211AddbaRequest" << endl;
                             break;
                         }
                         case 1: {
@@ -147,7 +143,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                             stream.writeUint4(addbaResponse->getTid());
                             stream.writeNBitsOfUint64Be(addbaResponse->getBufferSize(), 10);
                             stream.writeUint16Be(addbaResponse->getBlockAckTimeoutValue().inUnit(SIMTIME_US) / 1024);
-                            std::cout << "serializing Ieee80211AddbaResponse" << endl;
                             break;
                         }
                         case 2: {
@@ -157,7 +152,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                             stream.writeBit(delba->getInitiator());
                             stream.writeUint4(delba->getTid());
                             stream.writeUint16Be(delba->getReasonCode());
-                            std::cout << "serializing Ieee80211Delba" << endl;
                             break;
                         }
                         default:
@@ -173,21 +167,18 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                 stream.writeUint16Be(rtsFrame->getDurationField().inUnit(SIMTIME_US));
                 stream.writeMacAddress(rtsFrame->getReceiverAddress());
                 stream.writeMacAddress(rtsFrame->getTransmitterAddress());
-                std::cout << "serializing Ieee80211RtsFrame" << endl;
                 break;
             }
             case ST_CTS: {
                 auto ctsFrame = dynamicPtrCast<const Ieee80211CtsFrame>(chunk);
                 stream.writeUint16Be(ctsFrame->getDurationField().inUnit(SIMTIME_US));
                 stream.writeMacAddress(ctsFrame->getReceiverAddress());
-                std::cout << "serializing Ieee80211CtsFrame" << endl;
                 break;
             }
             case ST_ACK: {
                 auto ackFrame = dynamicPtrCast<const Ieee80211AckFrame>(chunk);
                 stream.writeUint16Be(ackFrame->getDurationField().inUnit(SIMTIME_US));
                 stream.writeMacAddress(ackFrame->getReceiverAddress());
-                std::cout << "serializing Ieee80211AckFrame" << endl;
                 break;
             }
             case ST_BLOCKACK_REQ: {
@@ -207,7 +198,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                     stream.writeUint32Be(basicBlockAckReq->getFragmentNumber());
                     stream.writeUint64Be(0);
                     stream.writeUint64Be(basicBlockAckReq->getStartingSequenceNumber().getRaw());
-                    std::cout << "serializing Ieee80211BasicBlockAckReq" << endl;
                 }
                 else if (!multiTid && compressedBitmap) {
                     auto compressedBlockAckReq = dynamicPtrCast<const Ieee80211CompressedBlockAckReq>(chunk);
@@ -215,7 +205,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                     stream.writeUint32Be(compressedBlockAckReq->getFragmentNumber());
                     stream.writeUint64Be(0);
                     stream.writeUint64Be(compressedBlockAckReq->getStartingSequenceNumber().getRaw());
-                    std::cout << "serializing Ieee80211CompressedBlockAckReq" << endl;
                 }
                 else if (multiTid && compressedBitmap) {
                     throw cRuntimeError("Ieee80211MacHeaderSerializer: cannot serialize the frame, Ieee80211MultiTidBlockAckReq unimplemented.");
@@ -243,7 +232,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                         stream.writeByte(basicBlockAck->getBlockAckBitmap(i).getBytes()[0]);
                         stream.writeByte(basicBlockAck->getBlockAckBitmap(i).getBytes()[1]);
                     }
-                    std::cout << "serializing Ieee80211BasicBlockAck" << endl;
                 }
                 else if (!multiTid && compressedBitmap) {
                     auto compressedBlockAck = dynamicPtrCast<const Ieee80211CompressedBlockAck>(chunk);
@@ -252,7 +240,6 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                     for (size_t i = 0; i < 8; ++i) {
                         stream.writeByte(compressedBlockAck->getBlockAckBitmap().getBytes()[i]);
                     }
-                    std::cout << "serializing Ieee80211CompressedBlockAck" << endl;
                 }
                 else if (multiTid && compressedBitmap) {
                     throw cRuntimeError("Ieee80211MacHeaderSerializer: cannot serialize the frame, Ieee80211MultiTidBlockAck unimplemented.");
@@ -280,13 +267,12 @@ void Ieee80211MacHeaderSerializer::serialize(MemoryOutputStream& stream, const P
                     stream.writeNBitsOfUint64Be(dataHeader->getAckPolicy(), 2);
                     stream.writeBit(dataHeader->getAMsduPresent());
                 }
-                std::cout << "serializing Ieee80211DataHeader" << endl;
+                stream.writeByte(0);
                 break;
             }
             case ST_PSPOLL:
             case ST_LBMS_REQUEST:
             case ST_LBMS_REPORT: {
-                std::cout << "serializing ST_PSPOLL ST_LBMS_REQUEST ST_LBMS_REPORT" << endl;
                 break;
             }
             default:
@@ -359,7 +345,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                 mgmtHeader->setAddress3(stream.readMacAddress());
                 mgmtHeader->setSequenceNumber(SequenceNumber(stream.readUint4()));
                 mgmtHeader->setFragmentNumber(stream.readNBitsToUint64Be(12));
-                std::cout << "deserializing Ieee80211MgmtHeader" << endl;
                 return mgmtHeader;
             }
             case ST_ACTION: {
@@ -383,12 +368,10 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                 switch (actionFrame->getCategory()) {
                     case 1: {
                         actionFrame->markIncorrect();
-                        std::cout << "deserializing Ieee80211ActionFrame" << endl;
                         return actionFrame;
                     }
                     case 2: {
                         actionFrame->markIncorrect();
-                        std::cout << "deserializing Ieee80211ActionFrame" << endl;
                         return actionFrame;
                     }
                     case 3: {
@@ -422,7 +405,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                             addbaRequest->setBlockAckTimeoutValue(SimTime(stream.readUint16Be() * 1024, SIMTIME_US));
                             addbaRequest->set_fragmentNumber(stream.readUint4());
                             addbaRequest->setSequenceNumber(SequenceNumber(stream.readNBitsToUint64Be(12)));
-                            std::cout << "deserializing Ieee80211AddbaRequest" << endl;
                             return addbaRequest;
                         }
                         case 1: {
@@ -452,7 +434,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                             addbaResponse->setTid(stream.readUint4());
                             addbaResponse->setBufferSize(stream.readNBitsToUint64Be(10));
                             addbaResponse->setBlockAckTimeoutValue(SimTime(stream.readUint16Be() * 1024, SIMTIME_US));
-                            std::cout << "deserializing Ieee80211AddbaResponse" << endl;
                             return addbaResponse;
                         }
                         case 2: {
@@ -479,12 +460,10 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                             delba->setInitiator(stream.readBit());
                             delba->setTid(stream.readUint4());
                             delba->setReasonCode(stream.readUint16Be());
-                            std::cout << "deserializing Ieee80211Delba" << endl;
                             return delba;
                         }
                         default:
                             actionFrame->markIncorrect();
-                            std::cout << "deserializing Ieee80211ActionFrame" << endl;
                             return actionFrame;
                         }
                         break;
@@ -506,7 +485,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                 rtsFrame->setDurationField(SimTime(stream.readUint16Be(), SIMTIME_US));
                 rtsFrame->setReceiverAddress(stream.readMacAddress());
                 rtsFrame->setTransmitterAddress(stream.readMacAddress());
-                std::cout << "deserializing Ieee80211RtsFrame" << endl;
                 return rtsFrame;
             }
             case ST_CTS: {
@@ -522,7 +500,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                 ctsFrame->setToDS(toDS);
                 ctsFrame->setDurationField(SimTime(stream.readUint16Be(), SIMTIME_US));
                 ctsFrame->setReceiverAddress(stream.readMacAddress());
-                std::cout << "deserializing Ieee80211CtsFrame" << endl;
                 return ctsFrame;
             }
             case ST_ACK: {
@@ -538,7 +515,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                 ackFrame->setToDS(toDS);
                 ackFrame->setDurationField(SimTime(stream.readUint16Be(), SIMTIME_US));
                 ackFrame->setReceiverAddress(stream.readMacAddress());
-                std::cout << "deserializing Ieee80211AckFrame" << endl;
                 return ackFrame;
             }
             case ST_BLOCKACK_REQ: {
@@ -584,7 +560,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                     basicBlockAckReq->setFragmentNumber(stream.readUint32Be());
                     stream.readUint64Be();
                     basicBlockAckReq->setStartingSequenceNumber(SequenceNumber(stream.readUint64Be()));
-                    std::cout << "deserializing Ieee80211BasicBlockAckReq" << endl;
                     return basicBlockAckReq;
                 }
                 else if (!multiTid && compressedBitmap) {
@@ -610,7 +585,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                     compressedBlockAckReq->setFragmentNumber(stream.readUint32Be());
                     stream.readUint64Be();
                     compressedBlockAckReq->setStartingSequenceNumber(SequenceNumber(stream.readUint64Be()));
-                    std::cout << "deserializing Ieee80211CompressedBlockAckReq" << endl;
                     return compressedBlockAckReq;
                 }
                 else
@@ -665,7 +639,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                         BitVector* blockAckBitmap = new BitVector(bytes);
                         basicBlockAck->setBlockAckBitmap(i, *blockAckBitmap);
                     }
-                    std::cout << "deserializing Ieee80211BasicBlockAck" << endl;
                     return basicBlockAck;
                 }
                 else if (!multiTid && compressedBitmap) {
@@ -694,7 +667,6 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                         bytes.push_back(stream.readByte());
                     }
                     compressedBlockAck->setBlockAckBitmap(*(new BitVector(bytes)));
-                    std::cout << "deserializing Ieee80211CompressedBlockAck" << endl;
                     return compressedBlockAck;
                 }
                 else {
@@ -730,18 +702,16 @@ const Ptr<Chunk> Ieee80211MacHeaderSerializer::deserialize(MemoryInputStream& st
                     dataHeader->setAckPolicy(static_cast<AckPolicy>(stream.readNBitsToUint64Be(2)));
                     dataHeader->setAMsduPresent(stream.readBit());
                 }
-                std::cout << "deserializing Ieee80211DataHeader" << endl;
+                stream.readByte();
                 return dataHeader;
             }
             case ST_PSPOLL:
             case ST_LBMS_REQUEST:
             case ST_LBMS_REPORT: {
-                std::cout << "deserializing ST_PSPOLL ST_LBMS_REQUEST ST_LBMS_REPORT" << endl;
                 return macHeader;
             }
             default: {
                 macHeader->markIncorrect();
-                std::cout << "deserializing Ieee80211MacHeader" << endl;
                 return macHeader;
             }
         }
