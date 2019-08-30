@@ -41,8 +41,8 @@ std::ostream& Ieee80211ScalarTransmitter::printToStream(std::ostream& stream, in
 
 const ITransmission *Ieee80211ScalarTransmitter::createTransmission(const IRadio *transmitter, const Packet *packet, simtime_t startTime) const
 {
-    auto phyHeader = packet->peekAtFront<Ieee80211PhyHeader>();
     const IIeee80211Mode *transmissionMode = computeTransmissionMode(packet);
+    auto phyHeader = peekIeee80211PhyHeader(packet, transmissionMode);
     const Ieee80211Channel *transmissionChannel = computeTransmissionChannel(packet);
     W transmissionPower = computeTransmissionPower(packet);
     Hz transmissionBandwidth = transmissionMode->getDataMode()->getBandwidth();
@@ -62,6 +62,39 @@ const ITransmission *Ieee80211ScalarTransmitter::createTransmission(const IRadio
     const simtime_t headerDuration = transmissionMode->getHeaderMode()->getDuration();
     const simtime_t dataDuration = duration - headerDuration - preambleDuration;
     return new Ieee80211ScalarTransmission(transmitter, packet, startTime, endTime, preambleDuration, headerDuration, dataDuration, startPosition, endPosition, startOrientation, endOrientation, modulation, headerLength, dataLength, carrierFrequency, transmissionBandwidth, transmissionBitrate, transmissionPower, transmissionMode, transmissionChannel);
+}
+
+const Ptr<const Ieee80211PhyHeader> Ieee80211ScalarTransmitter::peekIeee80211PhyHeader(const Packet *packet, const IIeee80211Mode *mode)
+{
+    if (dynamic_cast<const Ieee80211DsssMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211DsssPhyHeader>();
+    }
+    else if (dynamic_cast<const Ieee80211DsssOfdmMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211DsssPhyHeader>();
+    }
+    else if (dynamic_cast<const Ieee80211ErpOfdmMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211ErpOfdmPhyHeader>();
+    }
+    else if (dynamic_cast<const Ieee80211FhssMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211FhssPhyHeader>();
+    }
+    else if (dynamic_cast<const Ieee80211HrDsssMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211HrDsssPhyHeader>();
+    }
+    else if (dynamic_cast<const Ieee80211HtMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211HtPhyHeader>();
+    }
+    else if (dynamic_cast<const Ieee80211IrMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211IrPhyHeader>();
+    }
+    else if (dynamic_cast<const Ieee80211OfdmMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211OfdmPhyHeader>();
+    }
+    else if (dynamic_cast<const Ieee80211VhtMode*>(mode)) {
+        return packet->peekAtFront<Ieee80211VhtPhyHeader>();
+    }
+    else
+        throw cRuntimeError("Invalid IEEE 802.11 PHY mode.");
 }
 
 } // namespace physicallayer
