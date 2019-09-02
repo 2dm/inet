@@ -159,7 +159,7 @@ transmission and ACK, first for the Wifi and then for the WPAN. The scale is lin
 
 .. **TODO rewrite the beginning**
 
-Transmissions are protected within a particular wireless technology, i.e. nodes receiving a data frame can infer how long the transmission of the data frame and the subsequent ACK will be, from the data frame's MAC header. They assume the channel is busy for the duration of the DATA + SIFS + ACK (thus they don't start transmitting during the SIFS). However, this protection mechanism doesn't work with the transmissions of other technologies, since nodes cannot receive and make sense of the MAC header. They just detect some signal power in the channel that makes them defer for the duration of a backoff period (but this duration is independent of the actual duration of the ongoing transmission). Also, neither technology performs CCA before sending an ack. Thus they are susceptible for transmitting into each others' ACKs, which can lead to more retransmissions.
+Transmissions are protected within a particular wireless technology, i.e. nodes receiving a data frame can infer how long the transmission of the data frame and the subsequent ACK will be, from the data frame's MAC header. They assume the channel is busy for the duration of the DATA + SIFS + ACK (thus they don't start transmitting during the SIFS). However, this protection mechanism doesn't work with the transmissions of other technologies, since nodes cannot receive and make sense of the MAC header. They just detect some signal power in the channel that makes them defer for the duration of a backoff period (but this duration is independent of the actual duration of the ongoing transmission). Also, neither technology performs CCA before sending an ACK. Thus they are susceptible for transmitting into each others' ACKs, which can lead to more retransmissions.
 
 .. **TODO** Hidden node protection doesn't work
 
@@ -227,7 +227,7 @@ Briefly about the syntax:
 
 .. **TODO**
 
-For more on the syntax, see :ned:`DimensionalTransmitterBase.ned`.
+For more on the syntax, see :ned:`DimensionalTransmitterBase`.
 
   - when there is interference, the snir is important for calculating reception
   - we set the SNIR mode to mean, because it might lead to a more realistic interference calculation (if we calculated with the min snir, a short spike might ruin a reception)
@@ -256,20 +256,23 @@ In the receiver module, reception of frames under the SNIR threshold is not atte
 The :par:`snirThresholdMode` specifies how the SNIR threshold is calculated.
 The parameter's value is either ``mean`` or ``min``, i.e. either take the `minimum` or the `mean` of the SNIR during the reception.
 
-**TODO when there are interfering frames, the snir is important for calculating reception**
+.. **TODO when there are interfering frames, the snir is important for calculating reception**
 
-**actually, its always important**
+.. **actually, its always important**
 
-In the error model, the :par:`snirMode` parameter specifies how the SNIR is computed when the receiver attempts to receive a frame; also either ``min`` or ``mean``. When taking the minimum of the SNIR during the reception, a short spike in the interfering signal might ruin the reception, as it can decrease the SNIR substantially. Inversely, when two signals overlap substantially but not entirely (in either time or frequency), the mean SNIR might not be low enough to ruin the reception (when in this case it would be more realistic if it did).
+.. The error model decides whether a reception is successful based on the SNIR (together with other factors, such as the modulation type).
+
+The SNIR is important for calculating reception; the error model uses it to decide if the reception was successful.
+In the error model, the :par:`snirMode` parameter specifies how the SNIR is computed when the receiver attempts to receive a frame; also either ``min`` or ``mean``. When calculating with the minimum of the SNIR during the reception, a short spike in the interfering signal might ruin the reception, as it can decrease the SNIR substantially. Inversely, when two signals overlap substantially but not entirely (in either time or frequency), the mean SNIR might not be low enough to ruin the reception (when in this case it would be more realistic if it did).
 
 .. **TODO why did we choose mean?**
 
 We set the :par:`snirMode` to ``mean`` because concurrent Wifi and WPAN signals don't overlap significantly in the time-frequency space. That is, the WPAN frame's spectrum is much smaller than the Wifi's; similarly, the Wifi frame is much shorter than the WPAN.
 
-  - they overlap in frequency, but its not substantial from the perspective of the wifi
-  - they overlap in time, but its not substantial from the perspective of the wpan
+..   - they overlap in frequency, but its not substantial from the perspective of the wifi
+     - they overlap in time, but its not substantial from the perspective of the wpan
 
-**TODO explain**
+.. **TODO explain**
 
 .. **TODO**
 
@@ -336,7 +339,7 @@ Here is the WPAN traffic configuration in :download:`omnetpp.ini <../omnetpp.ini
 
 The independent performance data can be obtained by running the ``WifiOnly``
 and the ``WpanOnly`` configurations in :download:`omnetpp.ini <../omnetpp.ini>`.
-The latter two configurations extend the ``Coexistence`` configuration, and disable either the Wifi or the WPAN host communication by setting the number of applications to 0:
+These configurations extend the ``Coexistence`` configuration, and disable either the Wifi or the WPAN host communication by setting the number of applications to 0:
 
 .. literalinclude:: ../omnetpp.ini
    :start-at: WifiOnly
@@ -467,7 +470,7 @@ It looks like the following when the simulation is run:
       :align: center
 
 The Wifi hosts have the MAC contention state, and the WPAN hosts have the MAC state
-displayed above them, using :ned:`InfoVisualizer`. The spectrum and power of received signals is visualized with a spectrum figure (par of :ned:`MediumVisualizer`) at all hosts. The spectrum figure displays the sum of all signals present at the receiving node. Signals not being received are indicated with blue. When receiving a signal, the received signal is indicated with green; the sum of interfering signals are indicated with red. Note that the spectrum figure configures its scale automatically based on the signals displayed; also, all spectrum figures use the same scale so that the signal spectrums and power levels can be compared.
+displayed above them, using :ned:`InfoVisualizer`. The spectrum and power of received signals is visualized with a spectrum figure (part of :ned:`MediumVisualizer`) at all hosts. The spectrum figure displays the sum of all signals present at the receiving node. Signals not being received are indicated with blue. When receiving a signal, the received signal is indicated with green; the sum of interfering signals are indicated with red. Note that the spectrum figure configures its scale automatically based on the signals displayed; also, all spectrum figures use the same scale so that the signal spectrums and power levels can be compared.
 
 The Wifi and WPAN hosts detect each others' transmissions (but cannot receive them),
 and this causes them to defer from transmitting. Sometimes they transmit at the same time, and the
@@ -503,6 +506,8 @@ The reason is that the overlap in the time-frequency space is not large. The two
 
 In the video, ``wifiHost1`` and ``wpanHost1`` transmit concurrently. The Wifi transmission is correctly received and successfuly ACKED. Then, ``wifiHost2`` senses the ongoing WPAN transmission, and defers from transmitting. The WPAN tranmission is correctly received by ``wpanHost2``. When the transmission is over, ``wifiHost1`` sends its next frame; since ACKs are not protected by CCA, ``wpanHost2`` sends the ACK concurrently with the Wifi frame (and also the Wifi ACK). All frames are correctly received; ``wifiHost1`` waited for the remainder of the WPAN transmission, during which it could have sent multiple frames.
 
+**TODO the sim time figure**
+
 .. **TODO**
 
 .. The Wifi transmission is correctly received and ACKED by ``wifiHost2``, despite the interfering WPAN transmission.
@@ -521,7 +526,7 @@ In the video, ``wifiHost1`` and ``wpanHost1`` transmit concurrently. The Wifi tr
 We examine the performance of the two technologies by looking at the number of received UDP packets
 at ``wifiHost2`` and ``wpanHost2``. We look at the independent performance
 of the Wifi and WPAN hosts (i.e. when there is just one of the host pairs communicating),
-and see how their performances change when both of them communicate concurrently.
+and see how their performance changes when both of them communicate concurrently.
 
 .. Since the two wireless technologies coexist on the same
    frequency band and affect each others' operation, they both take a performance hit when they operate with
@@ -545,12 +550,14 @@ Here are the performance results:
    Note that the fractional number of packets is due to
    the averaging of the repetitions.
 
-In this particular scenario, the performance of Wifi is decreased,
-by about 5 percent, compared to the base performance. The performance of WPAN didn't decrease, because it had packets to send infrequently; it could send them all despite the Wifi traffic.
+In this particular scenario, the performance of Wifi is decreased
+by about 5 percent compared to the base performance. The performance of WPAN didn't decrease, because it had packets to send infrequently; it could send them all despite the Wifi traffic.
 Note that the fractional number of packets is due to
 the averaging of the repetitions.
 
-**TODO is it explained that the wifi decreases because it has to wait for the WPAN?**
+In this scenario, the transmissions of both technologies could be received correctly when interfering with each other. The decrease in performance comes from the fact that hosts defer from transmitting when they detect ongoing transmissions.
+
+.. **TODO is it explained that the wifi decreases because it has to wait for the WPAN?**
 
 .. .. note::
 
