@@ -148,6 +148,8 @@ class INET_API TcpAlgorithm : public cObject
      */
     virtual void receivedDuplicateAck() = 0;
 
+    virtual void receivedExplicitCongestionNotification() {};
+
     /**
      * Called after we received an ACK for data not yet sent.
      * According to RFC 793 this function should send an ACK.
@@ -178,6 +180,15 @@ class INET_API TcpAlgorithm : public cObject
      * Restart REXMIT timer.
      */
     virtual void restartRexmitTimer() = 0;
+
+
+    virtual void startEcnTimer() {}
+
+    virtual void cancelEcnTimer() {}
+
+    virtual void restartEcnTimer() {}
+
+
 
     /**
      * Converting uint32 echoedTS to simtime_t and calling rttMeasurementComplete()

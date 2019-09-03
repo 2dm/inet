@@ -219,6 +219,11 @@ class INET_API TcpStateVariables : public cObject
     uint rcv_wnd_scale;    // RFC 1323, page 31: "Receive window scale power"
     uint snd_wnd_scale;    // RFC 1323, page 31: "Send window scale power"
 
+    // ECN
+    bool rcv_ecn_ce;
+    bool rcv_ecn_ece;
+    bool snd_ecn_cwr;
+    
     // TIMESTAMP related variables
     bool ts_support;    // set if the host supports Timestamps (header option) (RFC 1322)
     bool ts_enabled;    // set if the connection uses Window Scale (header option)

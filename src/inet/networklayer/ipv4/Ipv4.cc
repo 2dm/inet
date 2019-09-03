@@ -345,7 +345,9 @@ void Ipv4::preroutingFinish(Packet *packet)
 
         // check for local delivery; we must accept also packets coming from the interfaces that
         // do not yet have an IP address assigned. This happens during DHCP requests.
-        if (rt->isLocalAddress(destAddr) || fromIE->ipv4Data()->getIPAddress().isUnspecified()) {
+        bool flag1 = rt->isLocalAddress(destAddr);
+        bool flag2 = fromIE->ipv4Data()->getIPAddress().isUnspecified();
+        if (flag1 || flag2) {
             reassembleAndDeliver(packet);
         }
         else if (destAddr.isLimitedBroadcastAddress() || (broadcastIE = rt->findInterfaceByLocalBroadcastAddress(destAddr))) {
@@ -730,6 +732,13 @@ void Ipv4::reassembleAndDeliverFinish(Packet *packet)
     const Protocol *protocol = ipv4Header->getProtocol();
     auto remoteAddress(ipv4Header->getSrcAddress());
     auto localAddress(ipv4Header->getDestAddress());
+    
+    auto hasEcn = ipv4Header->getExplicitCongestionNotification();
+    if (hasEcn) {
+        EV_INFO << "\n\n\n\n\n\n\n\n GOT IP CE <--------------------------------------------------\n\n\n\n\n\n\n\n";
+        packet->addTagIfAbsent<EcnReq>()->setExplicitCongestionNotification(hasEcn);
+    }
+    
     decapsulate(packet);
     bool hasSocket = false;
     for (const auto &elem: socketIdToSocketDescriptor) {

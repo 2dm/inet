@@ -647,6 +647,12 @@ void TcpLwip::ip_output(LwipTcpLayer::tcp_pcb *pcb, L3Address const& srcP, L3Add
         EV_INFO << " PSH";
     if (tcpHdr->getUrgBit())
         EV_INFO << " URG";
+    if (tcpHdr->getEceBit())
+        EV_INFO << " ECE";
+    if (tcpHdr->getCwrBit())
+        EV_INFO << " CWR";
+    if (tcpHdr->getNsBit())
+        EV_INFO << " NS";
     EV_INFO << " len=" << B(packet->getDataLength()) - tcpHdr->getHeaderLength() << "\n";
 
     send(packet, "ipOut");

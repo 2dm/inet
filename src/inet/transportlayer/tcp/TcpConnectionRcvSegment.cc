@@ -25,6 +25,7 @@
 #include "inet/transportlayer/tcp/TcpSackRexmitQueue.h"
 #include "inet/transportlayer/tcp/TcpReceiveQueue.h"
 #include "inet/transportlayer/tcp/TcpAlgorithm.h"
+#include "inet/networklayer/common/EcnTag_m.h"
 
 namespace inet {
 
@@ -480,6 +481,23 @@ TcpEventCode TcpConnection::processSegment1stThru8th(Packet *packet, const Ptr<c
         //"
 
         if (payloadLength > 0) {
+
+
+            if (EcnReq *ecnReq = packet->removeTagIfPresent<EcnReq>())
+            {
+                EV_INFO << "\n\n\n\n\n\n\n\n GOT CE <--------------------------------------------------\n\n\n\n\n\n\n\n";
+                state->rcv_ecn_ce = true;
+                delete ecnReq;
+            //}
+            }
+
+            if (tcpseg->getCwrBit() && state->rcv_ecn_ce ) {
+            	state->rcv_ecn_ce = false;
+            	EV_INFO << "\n\n Got CWR => CE OFF <----------------\n\n";
+            }
+
+
+
             // check for full sized segment
             if ((uint32_t)payloadLength == state->snd_mss || (uint32_t)payloadLength + B(tcpseg->getHeaderLength() - TCP_MIN_HEADER_LENGTH).get() == state->snd_mss)
                 state->full_sized_segment_counter++;
@@ -1135,7 +1153,22 @@ bool TcpConnection::processAckInEstabEtc(Packet *packet, const Ptr<const TcpHead
     //"
     // Note: should use SND.MAX instead of SND.NXT in above checks
     //
-    if (seqGE(state->snd_una, tcpseg->getAckNo())) {
+    
+    // ECN
+
+   if (state->rcv_ecn_ece && !tcpseg->getEceBit()) {		// <---------------- Should be with RTT timer: ignore ece while rtt from last cwr and then act as if got a new ece
+    	state->rcv_ecn_ece = false;
+    	tcpAlgorithm->cancelEcnTimer();
+    	EV_INFO << "\n\n TCP ECE OFF <----------------\n\n";
+    }
+    if (tcpseg->getEceBit() && !state->rcv_ecn_ece) {
+    	EV_INFO << "\n\n TCP ECE ON <----------------\n\n";
+        state->rcv_ecn_ece = true;
+        updateWndInfo(tcpseg);
+        tcpAlgorithm->receivedExplicitCongestionNotification();
+        tcpAlgorithm->startEcnTimer();
+        state->snd_ecn_cwr = true;
+    } else if (seqGE(state->snd_una, tcpseg->getAckNo())) {
         //
         // duplicate ACK? A received TCP segment is a duplicate ACK if all of
         // the following apply:

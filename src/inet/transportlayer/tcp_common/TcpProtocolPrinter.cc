@@ -39,6 +39,18 @@ void TcpProtocolPrinter::print(const Ptr<const Chunk>& chunk, const Protocol *pr
         static const char *flagEnd = "]";
         context.infoColumn << header->getSrcPort() << "->" << header->getDestPort();
         const char *separ = flagStart;
+        if (header->getNsBit()) {
+            context.infoColumn << separ << "Ns";
+            separ = flagSepar;
+        }
+        if (header->getCwrBit()) {
+            context.infoColumn << separ << "Cwr";
+            separ = flagSepar;
+        }
+        if (header->getEceBit()) {
+            context.infoColumn << separ << "Ece";
+            separ = flagSepar;
+        }
         if (header->getUrgBit()) {
             context.infoColumn << separ << "Urg=" << header->getUrgentPointer();
             separ = flagSepar;

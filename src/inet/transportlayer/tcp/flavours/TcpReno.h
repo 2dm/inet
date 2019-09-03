@@ -60,6 +60,8 @@ class INET_API TcpReno : public TcpTahoeRenoFamily
 
     /** Redefine what should happen when dupAck was received, to add congestion window management */
     virtual void receivedDuplicateAck() override;
+
+    virtual void receivedExplicitCongestionNotification() override;
 };
 
 } // namespace tcp

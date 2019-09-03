@@ -45,6 +45,7 @@ namespace tcp {
 #define MIN_REXMIT_TIMEOUT     1.0   // 1s
 //#define MIN_REXMIT_TIMEOUT    0.6   // 600ms (3 ticks)
 #define MAX_REXMIT_TIMEOUT     240   // 2 * MSL (RFC 1122)
+#define MAX_ECN_TIMEOUT     	1   // <----- maybe less????
 #define MIN_PERSIST_TIMEOUT    5   //  5s
 #define MAX_PERSIST_TIMEOUT    60   // 60s
 
@@ -52,6 +53,9 @@ TcpBaseAlgStateVariables::TcpBaseAlgStateVariables()
 {
     rexmit_count = 0;
     rexmit_timeout = 3.0;
+
+    ecn_timeout = MAX_ECN_TIMEOUT;
+
 
     persist_factor = 0;
     persist_timeout = 5.0;
@@ -91,6 +95,7 @@ std::string TcpBaseAlgStateVariables::detailedInfo() const
     out << "snd_cwnd=" << snd_cwnd << "\n";
     out << "rto=" << rexmit_timeout << "\n";
     out << "persist_timeout=" << persist_timeout << "\n";
+    out << "ecn timout=" << ecn_timeout << "\n";
     // TBD add others too
     return out.str();
 }
@@ -98,7 +103,7 @@ std::string TcpBaseAlgStateVariables::detailedInfo() const
 TcpBaseAlg::TcpBaseAlg() : TcpAlgorithm(),
     state((TcpBaseAlgStateVariables *&)TcpAlgorithm::state)
 {
-    rexmitTimer = persistTimer = delayedAckTimer = keepAliveTimer = nullptr;
+    ecnTimer = rexmitTimer = persistTimer = delayedAckTimer = keepAliveTimer = nullptr;
     cwndVector = ssthreshVector = rttVector = srttVector = rttvarVector = rtoVector = numRtosVector = nullptr;
 }
 
@@ -109,6 +114,8 @@ TcpBaseAlg::~TcpBaseAlg()
     // cancel and delete timers
     if (rexmitTimer)
         delete cancelEvent(rexmitTimer);
+    if (ecnTimer)
+        delete cancelEvent(ecnTimer);
     if (persistTimer)
         delete cancelEvent(persistTimer);
     if (delayedAckTimer)
@@ -131,11 +138,13 @@ void TcpBaseAlg::initialize()
     TcpAlgorithm::initialize();
 
     rexmitTimer = new cMessage("REXMIT");
+    ecnTimer = new cMessage("ECN_TO");
     persistTimer = new cMessage("PERSIST");
     delayedAckTimer = new cMessage("DELAYEDACK");
     keepAliveTimer = new cMessage("KEEPALIVE");
 
     rexmitTimer->setContextPointer(conn);
+	ecnTimer->setContextPointer(conn);
     persistTimer->setContextPointer(conn);
     delayedAckTimer->setContextPointer(conn);
     keepAliveTimer->setContextPointer(conn);
@@ -209,6 +218,7 @@ void TcpBaseAlg::established(bool active)
 void TcpBaseAlg::connectionClosed()
 {
     cancelEvent(rexmitTimer);
+    cancelEvent(ecnTimer);
     cancelEvent(persistTimer);
     cancelEvent(delayedAckTimer);
     cancelEvent(keepAliveTimer);
@@ -218,6 +228,8 @@ void TcpBaseAlg::processTimer(cMessage *timer, TcpEventCode& event)
 {
     if (timer == rexmitTimer)
         processRexmitTimer(event);
+    else if (timer == ecnTimer)
+    	processEcnTimer(event);
     else if (timer == persistTimer)
         processPersistTimer(event);
     else if (timer == delayedAckTimer)
@@ -306,6 +318,12 @@ void TcpBaseAlg::processRexmitTimer(TcpEventCode& event)
     //
 }
 
+void TcpBaseAlg::processEcnTimer(TcpEventCode& event)
+{
+	state->rcv_ecn_ece = false;
+	EV_INFO << "\n\n TCP ECE Timeout! turning OFF <----------------\n\n";
+}
+
 void TcpBaseAlg::processPersistTimer(TcpEventCode& event)
 {
     // setup and restart the PERSIST timer
@@ -366,6 +384,22 @@ void TcpBaseAlg::startRexmitTimer()
     conn->scheduleTimeout(rexmitTimer, state->rexmit_timeout);
 }
 
+void TcpBaseAlg::startEcnTimer()
+{
+	if (ecnTimer) {
+		conn->scheduleTimeout(ecnTimer, state->ecn_timeout);
+		EV_ERROR << "\n\n Starting ECN timer:" <<ecnTimer->getId() <<"  for = "<< state->ecn_timeout * 1000 << " ms <----------------\n\n";
+	}
+}
+
+void TcpBaseAlg::cancelEcnTimer()
+{
+	if (ecnTimer) {
+		cancelEvent(ecnTimer);
+		EV_ERROR << "\n\n Canceling ECN timer:" <<ecnTimer->getId() << " <----------------\n\n";
+	}
+}
+
 void TcpBaseAlg::rttMeasurementComplete(simtime_t tSent, simtime_t tAcked)
 {
     //
@@ -396,6 +430,10 @@ void TcpBaseAlg::rttMeasurementComplete(simtime_t tSent, simtime_t tAcked)
         rto = MIN_REXMIT_TIMEOUT;
 
     state->rexmit_timeout = rto;
+
+    //ECN timeout
+    //state->ecn_timeout = srtt;
+    state->ecn_timeout = 2*newRTT;
 
     // record statistics
     EV_DETAIL << "Measured RTT=" << (newRTT * 1000) << "ms, updated SRTT=" << (srtt * 1000)
@@ -677,6 +715,14 @@ void TcpBaseAlg::restartRexmitTimer()
         cancelEvent(rexmitTimer);
 
     startRexmitTimer();
+}
+
+void TcpBaseAlg::restartEcnTimer()
+{
+    if (ecnTimer->isScheduled())
+        cancelEvent(ecnTimer);
+
+    startEcnTimer();
 }
 
 } // namespace tcp

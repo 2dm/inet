@@ -190,6 +190,15 @@ void TcpConnection::printSegmentBrief(Packet *packet, const Ptr<const TcpHeader>
 
     if (tcpseg->getUrgBit())
         EV_INFO << "urg " << tcpseg->getUrgentPointer() << " ";
+    
+    if (tcpseg->getEceBit())
+        EV_INFO << "ECE ";
+    
+    if (tcpseg->getCwrBit())
+        EV_INFO << "CWR ";
+    
+    if (tcpseg->getNsBit())
+        EV_INFO << "NS ";
 
     if (tcpseg->getHeaderLength() > TCP_MIN_HEADER_LENGTH) {    // Header options present?
         EV_INFO << "options ";
@@ -591,6 +600,10 @@ void TcpConnection::sendAck()
     tcpseg->setSequenceNo(state->snd_nxt);
     tcpseg->setAckNo(state->rcv_nxt);
     tcpseg->setWindow(updateRcvWnd());
+    
+    if (state->rcv_ecn_ce) {
+    	tcpseg->setEceBit(true);
+    }
 
     // write header options
     writeHeaderOptions(tcpseg);
@@ -670,6 +683,13 @@ void TcpConnection::sendSegment(uint32 bytes)
     tcpseg->setAckNo(state->rcv_nxt);
     tcpseg->setAckBit(true);
     tcpseg->setWindow(updateRcvWnd());
+
+    // ECN
+    if (state->snd_ecn_cwr) {
+        tcpseg->setCwrBit(true);
+        state->snd_ecn_cwr = false;
+    }
+    
 
     // TBD when to set PSH bit?
     // TBD set URG bit if needed

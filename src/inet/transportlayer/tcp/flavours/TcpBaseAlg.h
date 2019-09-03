@@ -43,6 +43,9 @@ class INET_API TcpBaseAlgStateVariables : public TcpStateVariables
     simtime_t rexmit_timeout;    ///< current retransmission timeout (aka RTO)
     //@}
 
+
+    simtime_t ecn_timeout;
+
     /// persist factor
     //@{
     uint persist_factor;    ///< factor needed for simplified PERSIST timer calculation
@@ -108,6 +111,7 @@ class INET_API TcpBaseAlg : public TcpAlgorithm
     TcpBaseAlgStateVariables *& state;    // alias to TcpAlgorithm's 'state'
 
     cMessage *rexmitTimer;
+    cMessage *ecnTimer;
     cMessage *persistTimer;
     cMessage *delayedAckTimer;
     cMessage *keepAliveTimer;
@@ -124,6 +128,7 @@ class INET_API TcpBaseAlg : public TcpAlgorithm
     /** @name Process REXMIT, PERSIST, DELAYED-ACK and KEEP-ALIVE timers */
     //@{
     virtual void processRexmitTimer(TcpEventCode& event);
+    virtual void processEcnTimer(TcpEventCode& event);
     virtual void processPersistTimer(TcpEventCode& event);
     virtual void processDelayedAckTimer(TcpEventCode& event);
     virtual void processKeepAliveTimer(TcpEventCode& event);
@@ -133,6 +138,10 @@ class INET_API TcpBaseAlg : public TcpAlgorithm
      * Start REXMIT timer and initialize retransmission variables
      */
     virtual void startRexmitTimer();
+
+    virtual void startEcnTimer() override;
+
+    virtual void cancelEcnTimer() override;
 
     /**
      * Update state vars with new measured RTT value. Passing two simtime_t's
@@ -190,6 +199,8 @@ class INET_API TcpBaseAlg : public TcpAlgorithm
 
     virtual void receivedDuplicateAck() override;
 
+    virtual void receivedExplicitCongestionNotification() override {};
+
     virtual void receivedAckForDataNotYetSent(uint32 seq) override;
 
     virtual void ackSent() override;
@@ -199,6 +210,8 @@ class INET_API TcpBaseAlg : public TcpAlgorithm
     virtual void segmentRetransmitted(uint32 fromseq, uint32 toseq) override;
 
     virtual void restartRexmitTimer() override;
+
+    virtual void restartEcnTimer() override;
 };
 
 } // namespace tcp

@@ -933,6 +933,12 @@ void TcpNsc::sendToIP(const void *dataP, int lenP)
         EV_INFO << " PSH";
     if (tcpHdr->getUrgBit())
         EV_INFO << " URG";
+    if (tcpHdr->getEceBit())
+        EV_INFO << " ECE";
+    if (tcpHdr->getCwrBit())
+        EV_INFO << " CWR";
+    if (tcpHdr->getNsBit())
+        EV_INFO << " NS";
     EV_INFO << " len=" << payloadLength << "\n";
 
     send(fp, "ipOut");

@@ -82,6 +82,10 @@ TcpStateVariables::TcpStateVariables()
     rcv_wnd_scale = 0;    // will be set from configureStateVariables()
     snd_wnd_scale = 0;
 
+    rcv_ecn_ce = false;
+    rcv_ecn_ece = false;
+    snd_ecn_cwr = false;
+
     ts_support = false;    // will be set from configureStateVariables()
     ts_enabled = false;
     snd_initial_ts = false;

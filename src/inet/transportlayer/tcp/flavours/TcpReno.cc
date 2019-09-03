@@ -200,6 +200,12 @@ void TcpReno::receivedDataAck(uint32 firstSeqAcked)
     sendData(false);
 }
 
+void TcpReno::receivedExplicitCongestionNotification() 
+{
+    state->dupacks = DUPTHRESH;
+    receivedDuplicateAck();
+}
+
 void TcpReno::receivedDuplicateAck()
 {
     TcpTahoeRenoFamily::receivedDuplicateAck();
